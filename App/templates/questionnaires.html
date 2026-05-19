@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questionnaires - Student Career Guidance</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body { background: #f6f9fc; }
+        .question-item { padding: 15px; border-left: 3px solid #6f42c1; margin-bottom: 10px; background: white; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .source-badge { font-size: 0.8em; padding: 2px 6px; border-radius: 4px; }
+        .source-fact { background-color: #e7f1ff; color: #0d6efd; }
+        .source-rule { background-color: #d1e7dd; color: #0f5132; }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0"><i class="bi bi-clipboard-check"></i> Assessment Questionnaires</h3>
+                        <a href="{{ url_for('auth.dashboard') }}" class="btn btn-sm btn-light">Back to Dashboard</a>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">These questions are dynamically generated from the Facts and Rules in the Knowledge Base.</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>All Questions</h5>
+                            <button class="btn btn-outline-primary btn-sm" onclick="loadQuestions()">
+                                <i class="bi bi-arrow-clockwise"></i> Refresh
+                            </button>
+                        </div>
+
+                        <div id="loadingSpinner" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+
+                        <div id="questionsList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadQuestions);
+
+        function loadQuestions() {
+            const container = document.getElementById('questionsList');
+            const spinner = document.getElementById('loadingSpinner');
+            
+            spinner.style.display = 'block';
+            container.innerHTML = '';
+
+            fetch('/api/assessment-questions')
+                .then(response => response.json())
+                .then(data => {
+                    spinner.style.display = 'none';
+                    
+                    if (!data || data.length === 0) {
+                        container.innerHTML = '<div class="alert alert-info">No questions available. Add Facts or Rules to generate questions.</div>';
+                        return;
+                    }
+
+                    data.forEach((q, index) => {
+                        const div = document.createElement('div');
+                        div.className = 'question-item';
+                        
+                        let sourceBadge = '';
+                        let sourceText = '';
+                        
+                        if (q.fact) {
+                            sourceBadge = '<span class="source-badge source-fact">Derived from Fact</span>';
+                            sourceText = `<div class="text-muted small mt-1"><i class="bi bi-lightbulb"></i> Fact: ${q.fact}</div>`;
+                        } else if (q.rule) {
+                            sourceBadge = '<span class="source-badge source-rule">Derived from Rule</span>';
+                            sourceText = `<div class="text-muted small mt-1"><i class="bi bi-diagram-3"></i> Rule: ${q.rule}</div>`;
+                        }
+
+                        div.innerHTML = `
+                            <div class="d-flex justify-content-between">
+                                <h5 class="mb-1">Q${index + 1}: ${q.question}</h5>
+                                ${sourceBadge}
+                            </div>
+                            <div class="mb-2">
+                                <span class="badge bg-secondary">${q.category || 'General'}</span>
+                            </div>
+                            ${sourceText}
+                        `;
+                        container.appendChild(div);
+                    });
+                })
+                .catch(err => {
+                    spinner.style.display = 'none';
+                    container.innerHTML = '<div class="alert alert-danger">Error loading questions.</div>';
+                    console.error(err);
+                });
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

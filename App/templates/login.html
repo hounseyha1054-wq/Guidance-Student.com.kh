@@ -6,6 +6,7 @@
     <title>Login - Employee Career Guidance Expert System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
     <style>
         :root {
             --primary-color: #4361ee;
@@ -441,10 +442,33 @@
 </head>
 <body>
     <header>
-        <div class="container">
+        <div class="container d-flex justify-content-between align-items-center">
             <div class="brand">
                 <i class="bi bi-mortarboard-fill"></i>
-                <span>Employee Career Guidance Expert System</span>
+                <span data-i18n="login_brand">Student Career Guidance Expert System</span>
+            </div>
+            <!-- Theme & Language Controls -->
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="theme-toggle-btn text-white border-white-50" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                    <i class="bi bi-moon-stars-fill"></i>
+                </button>
+                <div class="dropdown">
+                    <button class="lang-selector-btn text-white border-white-50 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="lang-btn-text">🇺🇸 EN</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 py-2">
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" onclick="setLanguage('en')" data-lang-option="en">
+                                <span>🇺🇸</span> English
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" onclick="setLanguage('kh')" data-lang-option="kh">
+                                <span>🇰🇭</span> ភាសាខ្មែរ (Khmer)
+                            </button>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </header>
@@ -454,20 +478,20 @@
             <div class="login-left">
                 <div class="login-left-content">
                     <i class="bi bi-mortarboard-fill" style="font-size: 4rem; margin-bottom: 1.5rem;"></i>
-                    <h2>Welcome to Career Guidance</h2>
-                    <p>Unlock your potential with our personalized career assessment and guidance system.</p>
+                    <h2 data-i18n="login_welcome">Welcome to Career Guidance</h2>
+                    <p data-i18n="login_sub">Unlock your potential with our personalized career assessment and guidance system.</p>
                     <ul class="features-list">
-                        <li><i class="bi bi-check-circle-fill"></i> Personalized career recommendations</li>
-                        <li><i class="bi bi-check-circle-fill"></i> Skills assessment and tracking</li>
-                        <li><i class="bi bi-check-circle-fill"></i> Professional development resources</li>
-                        <li><i class="bi bi-check-circle-fill"></i> Industry insights and trends</li>
+                        <li><i class="bi bi-check-circle-fill"></i> <span data-i18n="feature_recommendations">Personalized career recommendations</span></li>
+                        <li><i class="bi bi-check-circle-fill"></i> <span data-i18n="feature_skills">Skills assessment and tracking</span></li>
+                        <li><i class="bi bi-check-circle-fill"></i> <span data-i18n="feature_dev">Professional development resources</span></li>
+                        <li><i class="bi bi-check-circle-fill"></i> <span data-i18n="feature_trends">Industry insights and trends</span></li>
                     </ul>
                 </div>
             </div>
             <div class="login-right">
                 <div class="login-header">
-                    <h2 id="loginTitle">User Login</h2>
-                    <p id="loginDescription">Access your personalized career assessment</p>
+                    <h2 id="loginTitle" data-i18n="login_title_user">User Login</h2>
+                    <p id="loginDescription" data-i18n="login_desc_user">Access your personalized career assessment</p>
                 </div>
                 
                 {% with messages = get_flashed_messages() %}
@@ -483,10 +507,10 @@
                 <!-- User Type Toggle -->
                 <div class="user-type-toggle">
                     <button type="button" class="user-type-btn active" id="userBtn" onclick="toggleUserType('user')">
-                        <span><i class="bi bi-person me-2"></i>User</span>
+                        <span><i class="bi bi-person me-2"></i><span data-i18n="tab_user_login">User</span></span>
                     </button>
                     <button type="button" class="user-type-btn admin" id="adminBtn" onclick="toggleUserType('admin')">
-                        <span><i class="bi bi-shield-lock me-2"></i>Admin</span>
+                        <span><i class="bi bi-shield-lock me-2"></i><span data-i18n="tab_admin_login">Admin</span></span>
                     </button>
                 </div>
                 
@@ -494,30 +518,29 @@
                     <input type="hidden" name="user_type" id="userTypeInput" value="user">
                     <div class="form-group">
                         <label for="username" class="form-label">
-                            <i class="bi bi-person-fill"></i>Username
+                            <i class="bi bi-person-fill"></i><span data-i18n="label_username_email">Username or Email</span>
                         </label>
                         <input type="text" class="form-control" id="username" name="username" required placeholder="Enter your username">
                     </div>
                     <div class="form-group">
                         <label for="password" class="form-label">
-                            <i class="bi bi-lock-fill"></i>Password
+                            <i class="bi bi-lock-fill"></i><span data-i18n="label_password">Password</span>
                         </label>
                         <input type="password" class="form-control" id="password" name="password" required placeholder="Enter your password">
                     </div>
                     <div class="form-check">
                         <input type="checkbox" class="form-check-input" id="rememberMe">
-                        <label class="form-check-label" for="rememberMe">Remember me</label>
+                        <label class="form-check-label" for="rememberMe" data-i18n="label_remember_me">Remember me</label>
                     </div>
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary" id="loginBtn">
-                            <i class="bi bi-box-arrow-in-right me-2"></i>Login as User
+                            <i class="bi bi-box-arrow-in-right me-2"></i><span id="loginBtnText" data-i18n="btn_login_user">Login as User</span>
                         </button>
                     </div>
                 </form>
                 
-                <div class="login-links">
-                    <p>Don't have an account? <a href="{{ url_for('auth.register') }}">Register here</a></p>
-                    <p><a href="#">Forgot your password?</a></p>
+                <div class="login-links mt-3 text-center">
+                    <p><span data-i18n="text_no_account">Don't have an account?</span> <a href="{{ url_for('auth.register') }}" data-i18n="link_register">Register here</a></p>
                 </div>
             </div>
         </div>
@@ -530,6 +553,7 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/theme-lang.js') }}"></script>
     <script>
         // Toggle between user and admin login
         function toggleUserType(type) {
@@ -539,23 +563,34 @@
             const loginTitle = document.getElementById('loginTitle');
             const loginDescription = document.getElementById('loginDescription');
             const loginBtn = document.getElementById('loginBtn');
+            const loginBtnText = document.getElementById('loginBtnText');
+            const lang = window.getCurrentLang ? window.getCurrentLang() : 'en';
+            const dict = (window.translations && window.translations[lang]) ? window.translations[lang] : {};
             
             if (type === 'admin') {
                 userBtn.classList.remove('active');
                 adminBtn.classList.add('active');
                 userTypeInput.value = 'admin';
-                loginTitle.textContent = 'Admin Login';
-                loginDescription.textContent = 'Access the admin dashboard';
-                loginBtn.innerHTML = '<i class="bi bi-shield-lock me-2"></i>Login as Admin';
+                loginTitle.setAttribute('data-i18n', 'login_title_admin');
+                loginTitle.textContent = dict.login_title_admin || 'Admin Login';
+                loginDescription.setAttribute('data-i18n', 'login_desc_admin');
+                loginDescription.textContent = dict.login_desc_admin || 'Access the admin dashboard';
                 loginBtn.className = 'btn btn-admin w-100';
+                loginBtnText.setAttribute('data-i18n', 'btn_login_admin');
+                loginBtnText.textContent = dict.btn_login_admin || 'Login as Admin';
+                loginBtn.querySelector('i').className = 'bi bi-shield-lock me-2';
             } else {
                 userBtn.classList.add('active');
                 adminBtn.classList.remove('active');
                 userTypeInput.value = 'user';
-                loginTitle.textContent = 'Employee Login';
-                loginDescription.textContent = 'Access your personalized career assessment';
-                loginBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Login as Employee';
+                loginTitle.setAttribute('data-i18n', 'login_title_user');
+                loginTitle.textContent = dict.login_title_user || 'User Login';
+                loginDescription.setAttribute('data-i18n', 'login_desc_user');
+                loginDescription.textContent = dict.login_desc_user || 'Access your personalized career assessment';
                 loginBtn.className = 'btn btn-primary w-100';
+                loginBtnText.setAttribute('data-i18n', 'btn_login_user');
+                loginBtnText.textContent = dict.btn_login_user || 'Login as User';
+                loginBtn.querySelector('i').className = 'bi bi-box-arrow-in-right me-2';
             }
         }
         

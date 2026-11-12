@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, Response,json
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, Response
+import json
 from datetime import datetime
 import os
 from werkzeug.utils import secure_filename
@@ -31,7 +32,11 @@ def admin_required(f):
         if 'user_id' not in session:
             return redirect(url_for('auth.login'))
         user = User.query.get(session['user_id'])
-        if not user or not user.is_admin:
+        if not user:
+            session.clear()
+            flash('User session invalid. Please log in again.')
+            return redirect(url_for('auth.login'))
+        if not user.is_admin:
             flash('You do not have permission to access this page')
             return redirect(url_for('auth.dashboard'))
         return f(*args, **kwargs)
@@ -44,7 +49,8 @@ def teacher_required(f):
             return redirect(url_for('auth.login'))
         teacher = Teacher.query.get(session['teacher_id'])
         if not teacher:
-            flash('You do not have permission to access this page')
+            session.clear()
+            flash('Teacher session invalid. Please log in again.')
             return redirect(url_for('auth.login'))
         return f(*args, **kwargs)
     return decorated_function
@@ -192,6 +198,9 @@ def get_dashboard_data():
 @login_required
 def dashboard():
     user = User.query.get(session['user_id'])
+    if not user:
+        session.clear()
+        return redirect(url_for('auth.login'))
     career_stats, recent_students, category_data, area_chart_data = get_dashboard_data()
     
     # Common stats
@@ -211,6 +220,9 @@ def dashboard():
 def assessment():
     """Career Assessment page for students"""
     user = User.query.get(session['user_id'])
+    if not user:
+        session.clear()
+        return redirect(url_for('auth.login'))
     return render_template('assessment.html', user=user)
 
 @auth_bp.route('/account')
@@ -218,7 +230,16 @@ def assessment():
 def account():
     """User Account/Profile page"""
     user = User.query.get(session['user_id'])
-    return render_template('account.html', user=user)
+    if not user:
+        session.clear()
+        return redirect(url_for('auth.login'))
+        
+    activities = UserActivity.query.filter_by(user_id=user.id).order_by(UserActivity.created_at.desc()).limit(10).all()
+    career_info = None
+    if user.recommended_career:
+        career_info = Career.query.filter_by(title=user.recommended_career).first()
+        
+    return render_template('account.html', user=user, activities=activities, career_info=career_info)
 
 @auth_bp.route('/admin/dashboard')
 @admin_required
@@ -276,6 +297,9 @@ def admin_dashboard():
     career_stats, recent_students, category_data, area_chart_data = get_dashboard_data()
     
     current_user = User.query.get(session['user_id'])
+    if not current_user:
+        session.clear()
+        return redirect(url_for('auth.login'))
 
     # Reuse existing student dashboard template for admin overview (admin-only panels rendered inside template)
     return render_template('dashboard.html', 

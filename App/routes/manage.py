@@ -53,8 +53,8 @@ def facts():
         return jsonify({'error': 'Admin access required'}), 403
 
     data = request.get_json() or {}
-    category = data.get('category')
-    content = data.get('content')
+    category = (data.get('category') or '').strip()
+    content = (data.get('content') or '').strip()
     if not category or not content:
         return jsonify({'error': 'category and content required'}), 400
     f = FactService.create_fact(user_id, category, content)
@@ -87,9 +87,9 @@ def manage_fact_item(fact_id):
     if request.method == 'PUT':
         data = request.get_json() or {}
         if 'category' in data:
-            fact.category = data['category']
+            fact.category = (data['category'] or '').strip()
         if 'content' in data:
-            fact.content = data['content']
+            fact.content = (data['content'] or '').strip()
         db.session.commit()
         return jsonify(fact.to_dict())
 
@@ -109,9 +109,9 @@ def rules():
         return jsonify({'error': 'Admin access required'}), 403
 
     data = request.get_json() or {}
-    domain = data.get('domain')
-    title = data.get('title')
-    description = data.get('description')
+    domain = (data.get('domain') or '').strip()
+    title = (data.get('title') or '').strip()
+    description = (data.get('description') or '').strip()
     if not domain or not title:
         return jsonify({'error': 'domain and title required'}), 400
     r = RuleService.create_rule(user_id, domain, title, description)
@@ -144,11 +144,11 @@ def manage_rule_item(rule_id):
     if request.method == 'PUT':
         data = request.get_json() or {}
         if 'domain' in data:
-            rule.domain = data['domain']
+            rule.domain = (data['domain'] or '').strip()
         if 'title' in data:
-            rule.title = data['title']
+            rule.title = (data['title'] or '').strip()
         if 'description' in data:
-            rule.description = data['description']
+            rule.description = (data['description'] or '').strip()
         db.session.commit()
         return jsonify(rule.to_dict())
 
@@ -266,6 +266,8 @@ def delete_user(user_id):
             return jsonify({'error': 'User not found'}), 404
             
         # Delete related records manually (if cascades aren't fully set up)
+        from ..model.teacher import StudentNote
+        StudentNote.query.filter_by(student_id=user_id).delete()
         UserActivity.query.filter_by(user_id=user_id).delete()
         Fact.query.filter_by(user_id=user_id).delete()
         Rule.query.filter_by(user_id=user_id).delete()

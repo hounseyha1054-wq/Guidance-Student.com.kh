@@ -3,26 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Employee Career Guidance Expert System</title>
+    <title>Admin Dashboard - Student Career Guidance System</title>
+    <!-- Google Fonts: Kantumruy Pro (Khmer) & Plus Jakarta Sans & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5.3 & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Global Dark Mode & Typography Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
     <style>
         :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
-            --accent-color: #7209b7;
-            --success-color: #06ffa5;
-            --warning-color: #ffbe0b;
-            --danger-color: #fb5607;
-            --info-color: #4cc9f0;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-            --sidebar-width: 280px;
-            --sidebar-collapsed-width: 80px;
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --primary-light: #eef2ff;
+            --secondary: #4cc9f0;
+            --accent: #7209b7;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --gray-900: #0f172a;
+            --gray-800: #1e293b;
+            --gray-700: #334155;
+            --gray-600: #475569;
+            --gray-500: #64748b;
+            --gray-300: #cbd5e1;
+            --gray-100: #f1f5f9;
+            --gray-50: #f8fafc;
+            --sidebar-width: 260px;
             --header-height: 70px;
-            --card-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-            --card-border-radius: 0.35rem;
-            --transition-speed: 0.3s;
+            --radius-md: 14px;
+            --radius-lg: 18px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+            --shadow-md: 0 6px 20px rgba(15, 23, 42, 0.06);
+            --shadow-lg: 0 15px 30px rgba(15, 23, 42, 0.08);
         }
 
         * {
@@ -32,2110 +49,823 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f5f7fb;
-            color: #5a5c69;
-            font-size: 0.9rem;
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f8fafc;
+            color: var(--dark);
+            min-height: 100vh;
             overflow-x: hidden;
+            transition: var(--theme-transition);
         }
 
-        /* Layout */
-        .wrapper {
+        /* Dashboard Layout */
+        .dashboard-wrapper {
             display: flex;
-            width: 100%;
             min-height: 100vh;
         }
 
-        /* Sidebar */
+        /* Sidebar Styles */
         .sidebar {
             width: var(--sidebar-width);
-            min-height: 100vh;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
             position: fixed;
             top: 0;
+            bottom: 0;
             left: 0;
-            z-index: 100;
-            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            transition: all var(--transition-speed) ease;
-            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-        }
-
-        .sidebar.collapsed {
-            width: var(--sidebar-collapsed-width);
+            z-index: 1040;
+            transition: var(--transition);
         }
 
         .sidebar-brand {
+            height: var(--header-height);
+            padding: 0 1.5rem;
             display: flex;
             align-items: center;
-            padding: 1.25rem 1rem;
-            color: white;
+            gap: 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
             text-decoration: none;
-            font-weight: 700;
+            color: var(--dark);
+            font-weight: 800;
             font-size: 1.25rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            letter-spacing: -0.02em;
         }
 
-        .sidebar-brand i {
-            margin-right: 0.75rem;
-            font-size: 1.5rem;
-        }
-
-        .sidebar.collapsed .sidebar-brand span {
-            display: none;
-        }
-
-        .sidebar-content {
-            height: calc(100vh - var(--header-height));
-            overflow-y: auto;
-            overflow-x: hidden;
+        .sidebar-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.25);
         }
 
         .sidebar-nav {
-            padding: 1rem 0;
+            padding: 1.25rem 1rem;
+            flex-grow: 1;
+            overflow-y: auto;
         }
 
-        .sidebar-header {
-            padding: 0.75rem 1.5rem;
-            font-size: 0.75rem;
+        .nav-category {
+            font-size: 0.72rem;
             text-transform: uppercase;
-            letter-spacing: 0.05rem;
-            color: rgba(255, 255, 255, 0.6);
-            font-weight: 600;
+            font-weight: 700;
+            color: var(--gray-500);
+            letter-spacing: 0.05em;
+            padding: 0.5rem 0.75rem;
+            margin-top: 0.75rem;
         }
 
-        .sidebar.collapsed .sidebar-header {
-            text-align: center;
-            padding: 0.75rem 0;
-        }
-
-        .sidebar-item {
-            position: relative;
-            margin-bottom: 0.25rem;
+        .nav-category:first-child {
+            margin-top: 0;
         }
 
         .sidebar-link {
             display: flex;
             align-items: center;
-            padding: 0.75rem 1.5rem;
-            color: rgba(255, 255, 255, 0.8);
+            gap: 0.75rem;
+            padding: 0.7rem 0.85rem;
+            color: var(--gray-700);
+            font-weight: 600;
+            font-size: 0.92rem;
+            border-radius: 10px;
             text-decoration: none;
-            transition: all var(--transition-speed) ease;
-            position: relative;
-        }
-
-        .sidebar.collapsed .sidebar-link {
-            justify-content: center;
-            padding: 0.75rem 0;
-        }
-
-        .sidebar-link:hover {
-            color: white;
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .sidebar-link.active {
-            color: white;
-            background-color: rgba(255, 255, 255, 0.15);
-        }
-
-        .sidebar-link.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 4px;
-            background-color: var(--accent-color);
+            transition: var(--transition);
+            margin-bottom: 0.25rem;
         }
 
         .sidebar-link i {
-            margin-right: 0.75rem;
-            font-size: 1.1rem;
-            width: 20px;
-            text-align: center;
+            font-size: 1.15rem;
+            color: var(--gray-500);
+            transition: var(--transition);
         }
 
-        .sidebar.collapsed .sidebar-link i {
-            margin-right: 0;
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            color: var(--primary);
+            background: var(--primary-light);
+            font-weight: 700;
         }
 
-        .sidebar-dropdown {
-            list-style: none;
-            padding: 0;
-            background-color: rgba(0, 0, 0, 0.1);
+        .sidebar-link:hover i,
+        .sidebar-link.active i {
+            color: var(--primary);
         }
 
-        .sidebar.collapsed .sidebar-dropdown {
-            display: none;
+        .sidebar-user {
+            padding: 1rem 1.25rem;
+            border-top: 1px solid #f1f5f9;
+            background: #fafcff;
         }
 
-        .sidebar-dropdown .sidebar-link {
-            padding-left: 3.5rem;
-            font-size: 0.875rem;
-        }
-
-        .sidebar.collapsed .sidebar-dropdown .sidebar-link {
-            padding-left: 0;
-        }
-
-        .sidebar-cta {
-            padding: 1.5rem;
-            margin: 1rem;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: var(--card-border-radius);
-            color: white;
-        }
-
-        .sidebar.collapsed .sidebar-cta {
-            display: none;
-        }
-
-        /* Main Content */
-        .main {
-            flex: 1;
+        /* Main Content Container */
+        .main-container {
             margin-left: var(--sidebar-width);
-            transition: all var(--transition-speed) ease;
+            flex-grow: 1;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
+            transition: var(--transition);
         }
 
-        .main.expanded {
-            margin-left: var(--sidebar-collapsed-width);
-        }
-
-        /* Header */
-        .navbar {
+        /* Top Header */
+        .top-header {
             height: var(--header-height);
-            background-color: white;
-            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-            padding: 0 1.5rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-        }
-
-        .sidebar-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 2.5rem;
-            height: 2.5rem;
-            border-radius: 50%;
-            background-color: transparent;
-            border: none;
-            cursor: pointer;
-            transition: all var(--transition-speed) ease;
-        }
-
-        .sidebar-toggle:hover {
-            background-color: var(--light-color);
-        }
-
-        .hamburger {
-            display: block;
-            width: 1.25rem;
-            height: 0.125rem;
-            background-color: var(--dark-color);
-            position: relative;
-            transition: all var(--transition-speed) ease;
-        }
-
-        .hamburger::before,
-        .hamburger::after {
-            content: '';
-            position: absolute;
-            width: 1.25rem;
-            height: 0.125rem;
-            background-color: var(--dark-color);
-            transition: all var(--transition-speed) ease;
-        }
-
-        .hamburger::before {
-            top: -0.375rem;
-        }
-
-        .hamburger::after {
-            top: 0.375rem;
-        }
-
-        .navbar-nav {
-            display: flex;
-            align-items: center;
-        }
-
-        .nav-item {
-            margin-left: 1rem;
-        }
-
-        .nav-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 2rem;
-            height: 2rem;
-            border-radius: 50%;
-            background-color: transparent;
-            color: var(--dark-color);
-            text-decoration: none;
-            position: relative;
-            transition: all var(--transition-speed) ease;
-        }
-
-        .nav-icon:hover {
-            background-color: var(--light-color);
-            color: var(--primary-color);
-        }
-
-        .indicator {
-            position: absolute;
+            position: sticky;
             top: 0;
-            right: 0;
-            width: 0.5rem;
-            height: 0.5rem;
-            border-radius: 50%;
-            background-color: var(--danger-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.625rem;
-            font-weight: 700;
+            z-index: 1020;
         }
 
-        .avatar {
-            width: 2rem;
-            height: 2rem;
-            border-radius: 50%;
-            margin-right: 0.5rem;
-        }
-
-        /* Content */
-        .content {
-            flex: 1;
+        /* KPI Stat Cards */
+        .stat-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            border: 1px solid #e2e8f0;
             padding: 1.5rem;
-            overflow-y: auto;
-        }
-
-        /* Cards */
-        .card {
-            border: none;
-            border-radius: var(--card-border-radius);
-            box-shadow: var(--card-shadow);
-            margin-bottom: 1.5rem;
-            transition: all var(--transition-speed) ease;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0.25rem 2rem 0 rgba(58, 59, 69, 0.2);
-        }
-
-        .card-header {
-            background-color: white;
-            border-bottom: 1px solid #e3e6f0;
-            padding: 1rem 1.25rem;
-            font-weight: 600;
-            color: var(--dark-color);
-        }
-
-        .card-body {
-            padding: 1.25rem;
-        }
-
-        .card-footer {
-            background-color: white;
-            border-top: 1px solid #e3e6f0;
-            padding: 0.75rem 1.25rem;
-        }
-
-        /* Stats Cards */
-        .stats-card {
-            border-left: 0.25rem solid;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stats-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 4rem;
-            height: 4rem;
-            opacity: 0.1;
-            border-radius: 50%;
-            transform: translate(1rem, -1rem);
-        }
-
-        .stats-card.primary {
-            border-left-color: var(--primary-color);
-        }
-
-        .stats-card.primary::before {
-            background-color: var(--primary-color);
-        }
-
-        .stats-card.success {
-            border-left-color: var(--success-color);
-        }
-
-        .stats-card.success::before {
-            background-color: var(--success-color);
-        }
-
-        .stats-card.info {
-            border-left-color: var(--info-color);
-        }
-
-        .stats-card.info::before {
-            background-color: var(--info-color);
-        }
-
-        .stats-card.warning {
-            border-left-color: var(--warning-color);
-        }
-
-        .stats-card.warning::before {
-            background-color: var(--warning-color);
-        }
-
-        .stats-icon {
-            font-size: 2rem;
-            opacity: 0.3;
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        /* Progress Bars */
-        .progress {
-            height: 0.75rem;
-            border-radius: 10rem;
-            background-color: #e9ecef;
-        }
-
-        .progress-bar {
-            border-radius: 10rem;
-        }
-
-        /* Tables */
-        .table {
-            margin-bottom: 0;
-        }
-
-        .table th {
-            border-top: none;
-            font-weight: 600;
-            color: var(--dark-color);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05rem;
-            background-color: #f8f9fc;
-        }
-
-        .table td {
-            vertical-align: middle;
-            border-color: #e3e6f0;
-        }
-
-        /* Buttons */
-        .btn {
-            border-radius: 0.35rem;
-            font-weight: 500;
-            transition: all var(--transition-speed) ease;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
-        }
-
-        .btn-success {
-            background-color: var(--success-color);
-            border-color: var(--success-color);
-            color: var(--dark-color);
-        }
-
-        .btn-success:hover {
-            background-color: #00e091;
-            border-color: #00e091;
-            color: var(--dark-color);
-        }
-
-        .btn-info {
-            background-color: var(--info-color);
-            border-color: var(--info-color);
-            color: var(--dark-color);
-        }
-
-        .btn-info:hover {
-            background-color: #00b8d9;
-            border-color: #00b8d9;
-            color: var(--dark-color);
-        }
-
-        .btn-warning {
-            background-color: var(--warning-color);
-            border-color: var(--warning-color);
-            color: var(--dark-color);
-        }
-
-        .btn-warning:hover {
-            background-color: #ffaa00;
-            border-color: #ffaa00;
-            color: var(--dark-color);
-        }
-
-        .btn-danger {
-            background-color: var(--danger-color);
-            border-color: var(--danger-color);
-        }
-
-        .btn-danger:hover {
-            background-color: #e63900;
-            border-color: #e63900;
-        }
-
-        .btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-        }
-
-        /* Timeline */
-        .timeline {
-            position: relative;
-            padding-left: 2rem;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 0.5rem;
-            top: 0;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
             height: 100%;
-            width: 0.125rem;
-            background-color: #e3e6f0;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
         }
 
-        .timeline-item {
-            position: relative;
-            margin-bottom: 1.5rem;
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: rgba(67, 97, 238, 0.3);
         }
 
-        .timeline-point {
-            position: absolute;
-            left: -1.5rem;
-            top: 0.5rem;
-            width: 1rem;
-            height: 1rem;
-            border-radius: 50%;
-            background-color: white;
-            border: 0.25rem solid;
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
         }
 
-        .timeline-point.primary {
-            border-color: var(--primary-color);
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--dark);
+            line-height: 1.2;
+            letter-spacing: -0.02em;
         }
 
-        .timeline-point.success {
-            border-color: var(--success-color);
+        .stat-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
         }
 
-        .timeline-point.warning {
-            border-color: var(--warning-color);
-        }
-
-        .timeline-point.info {
-            border-color: var(--info-color);
-        }
-
-        .timeline-content {
-            background-color: white;
-            border-radius: var(--card-border-radius);
-            padding: 1rem;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-        }
-
-        /* Footer */
-        .footer {
-            background-color: white;
-            border-top: 1px solid #e3e6f0;
-            padding: 1rem 1.5rem;
-            font-size: 0.8rem;
-            color: #858796;
-        }
-
-        /* Profile card enhancements */
-        .profile-card {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: white;
-            border-radius: var(--card-border-radius);
-            box-shadow: var(--card-shadow);
+        /* Card Panels */
+        .dash-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            border: 1px solid #e2e8f0;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1.75rem;
             overflow: hidden;
+            transition: var(--transition);
         }
 
-        .profile-card .card-body {
-            padding: 1.5rem;
+        .dash-card:hover {
+            box-shadow: var(--shadow-md);
         }
 
-        .profile-card h5 {
-            color: white;
+        .dash-card-header {
+            padding: 1.25rem 1.75rem;
+            background: white;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .profile-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 4px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
-        }
-
-        /* Badge improvements */
-        .badge {
-            font-weight: 500;
-            padding: 0.375rem 0.75rem;
-            font-size: 0.75rem;
-        }
-
-        /* Page header improvements */
-        .page-header {
-            background-color: white;
-            border-radius: var(--card-border-radius);
-            box-shadow: var(--card-shadow);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .page-title {
+        .dash-card-title {
+            font-size: 1.1rem;
             font-weight: 700;
-            color: var(--dark-color);
+            color: var(--dark);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dash-card-body {
+            padding: 1.75rem;
+        }
+
+        /* Clean Table */
+        .table-custom {
+            width: 100%;
             margin-bottom: 0;
         }
 
-        /* Button group improvements */
-        .btn-toolbar .btn-group {
-            margin-right: 0.5rem;
-        }
-
-        /* Activity feed improvements */
-        .activity-feed {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        /* Card improvements */
-        .card-stats {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card-stats .card-body {
-            padding: 1.5rem;
-        }
-
-        .card-stats .card-stats-icon {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 3rem;
-            opacity: 0.2;
-        }
-
-        .card-stats .card-stats-title {
-            font-size: 0.875rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .card-stats .card-stats-value {
-            font-size: 1.5rem;
+        .table-custom th {
+            background: #f8fafc;
+            color: var(--gray-600);
+            font-size: 0.78rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.9rem 1.25rem;
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        .card-stats .card-stats-change {
-            font-size: 0.75rem;
-            font-weight: 500;
+        .table-custom td {
+            padding: 1rem 1.25rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.92rem;
         }
 
-        .card-stats .card-stats-change.positive {
-            color: var(--success-color);
+        .table-custom tr:hover td {
+            background-color: #f8fbff;
         }
 
-        .card-stats .card-stats-change.negative {
-            color: var(--danger-color);
+        /* Action Buttons */
+        .btn-action {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: var(--gray-700);
+            transition: var(--transition);
+            text-decoration: none;
         }
 
-        /* Animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .btn-action:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
         }
 
-        .fade-in {
-            animation: fadeIn 0.5s ease forwards;
+        .btn-action.delete:hover {
+            background: #fee2e2;
+            color: var(--danger);
+            border-color: var(--danger);
         }
 
-        /* Chart containers */
-        .chart-container {
-            position: relative;
-            height: 300px;
-            width: 100%;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
+        @media (max-width: 992px) {
             .sidebar {
                 transform: translateX(-100%);
             }
-
             .sidebar.show {
                 transform: translateX(0);
             }
-
-            .main {
+            .main-container {
                 margin-left: 0;
             }
-
-            .main.expanded {
-                margin-left: 0;
-            }
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 0.5rem;
-        }
-
-        ::-webkit-scrollbar-track {
-            background-color: #f8f9fc;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background-color: #d1d3e2;
-            border-radius: 10rem;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background-color: #a0a3bd;
         }
     </style>
 </head>
 <body>
-    <div class="wrapper">
-        <!-- Sidebar -->
-        <nav id="sidebar" class="sidebar js-sidebar">
-            <div class="sidebar-content js-simplebar">
-                <a class="sidebar-brand" href="#">
-                    <i class="bi bi-mortarboard-fill"></i>
-                    <span class="align-middle">Career Guide</span>
+
+    <div class="dashboard-wrapper">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="mainSidebar">
+            <a href="{{ url_for('auth.admin_dashboard') }}" class="sidebar-brand">
+                <div class="sidebar-icon">
+                    <i class="bi bi-compass"></i>
+                </div>
+                <span>AdminPortal</span>
+            </a>
+
+            <div class="sidebar-nav">
+                <div class="nav-category" data-i18n="admin_main_menu">Main Menu</div>
+                <a href="{{ url_for('auth.admin_dashboard') }}" class="sidebar-link active">
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    <span data-i18n="nav_dashboard_overview">Dashboard Overview</span>
+                </a>
+                <a href="{{ url_for('auth.all_employees_page') }}" class="sidebar-link">
+                    <i class="bi bi-people-fill"></i>
+                    <span data-i18n="nav_enrolled_students">Enrolled Students</span>
                 </a>
 
-                <ul class="sidebar-nav">
-                    <li class="sidebar-header">Main</li>
-                    <li class="sidebar-item active">
-                        <a class="sidebar-link" href="#dashboard" data-bs-toggle="collapse" role="button" aria-expanded="true" aria-controls="dashboard">
-                            <i class="bi bi-speedometer2"></i>
-                            <span class="align-middle">Dashboard</span>
-                        </a>
-                        <ul id="dashboard" class="sidebar-dropdown list-unstyled collapse show" data-bs-parent="#sidebar">
-                            <li class="sidebar-item active"><a class="sidebar-link" href="#">Overview</a></li>
-                            <li class="sidebar-item"><a class="sidebar-link" href="#analytics">Analytics</a></li>
-                        </ul>
-                    </li>
-                    
-                    {% if session.get('is_admin') %}
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="#students" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="students">
-                            <i class="bi bi-people-fill"></i>
-                            <span class="align-middle">Employees</span>
-                        </a>
-                        <ul id="students" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                            <li class="sidebar-item"><a class="sidebar-link" href="#students-table-section">All Employees</a></li>
-                            <li class="sidebar-item"><a class="sidebar-link" href="#" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">Add Employee</a></li>
-                            <li class="sidebar-item"><a class="sidebar-link" href="#" onclick="alert('Import functionality is under development.')">Import Employees</a></li>
-                        </ul>
-                    </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="#careers" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="careers">
-                            <i class="bi bi-briefcase-fill"></i>
-                            <span class="align-middle">Careers</span>
-                        </a>
-                        <ul id="careers" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                            <li class="sidebar-item"><a class="sidebar-link" href="#careers-table-section">All Careers</a></li>
-                            <li class="sidebar-item"><a class="sidebar-link" href="#analytics">Career Categories</a></li>
-                            <li class="sidebar-item"><a class="sidebar-link" href="#" onclick="alert('Skills Mapping is under development.')">Skills Mapping</a></li>
-                        </ul>
-                    </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="#knowledge" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="knowledge">
-                            <i class="bi bi-book-fill"></i>
-                            <span class="align-middle">Knowledge Base</span>
-                        </a>
-                        <ul id="knowledge" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                            <li class="sidebar-item"><a class="sidebar-link" href="{{ url_for('manage.facts_page') }}">Facts</a></li>
-                            <li class="sidebar-item"><a class="sidebar-link" href="{{ url_for('manage.rules_page') }}">Rules</a></li>
-                            <li class="sidebar-item"><a class="sidebar-link" href="{{ url_for('manage.questionnaires_page') }}">Questionnaires</a></li>
-                        </ul>
-                    </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="#reports" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="reports">
-                            <i class="bi bi-file-earmark-text-fill"></i>
-                            <span class="align-middle">Reports</span>
-                        </a>
-                        <ul id="reports" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                            <li class="sidebar-item"><a class="sidebar-link" href="#analytics">Employee Reports</a></li>
-                            <li class="sidebar-item"><a class="sidebar-link" href="#analytics">Career Analytics</a></li>
-                            <li class="sidebar-item"><a class="sidebar-link" href="#system-activity-section">System Usage</a></li>
-                        </ul>
-                    </li>
-                    {% else %}
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="#assessment" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="assessment">
-                            <i class="bi bi-clipboard-check-fill"></i>
-                            <span class="align-middle">Assessment</span>
-                        </a>
-                        <ul id="assessment" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                            <li class="sidebar-item"><a class="sidebar-link" href="{{ url_for('auth.assessment') }}">Take Assessment</a></li>
-                            <li class="sidebar-item"><a class="sidebar-link" href="#">My Results</a></li>
-                            <li class="sidebar-item"><a class="sidebar-link" href="#">Assessment History</a></li>
-                        </ul>
-                    </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="#careers" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="careers">
-                            <i class="bi bi-briefcase-fill"></i>
-                            <span class="align-middle">Career Paths</span>
-                        </a>
-                        <ul id="careers" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                            <li class="sidebar-item"><a class="sidebar-link" href="#">Explore Careers</a></li>
-                            <li class="sidebar-item"><a class="sidebar-link" href="#">Career Comparison</a></li>
-                            <li class="sidebar-item"><a class="sidebar-link" href="#">Salary Insights</a></li>
-                        </ul>
-                    </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="#resources" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="resources">
-                            <i class="bi bi-book-fill"></i>
-                            <span class="align-middle">Resources</span>
-                        </a>
-                        <ul id="resources" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                            <li class="sidebar-item"><a class="sidebar-link" href="#">Learning Materials</a></li>
-                            <li class="sidebar-item"><a class="sidebar-link" href="#">Career Guides</a></li>
-                            <li class="sidebar-item"><a class="sidebar-link" href="#">Success Stories</a></li>
-                        </ul>
-                    </li>
-                    {% endif %}
-                    
-                    <li class="sidebar-header">Settings</li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="#">
-                            <i class="bi bi-gear-fill"></i>
-                            <span class="align-middle">Settings</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="#" data-bs-toggle="modal" data-bs-target="#profileModal">
-                            <i class="bi bi-person-circle"></i>
-                            <span class="align-middle">Profile</span>
-                        </a>
-                    </li>
-                </ul>
+                <div class="nav-category" data-i18n="nav_knowledge_base">Expert Knowledge Base</div>
+                <a href="{{ url_for('manage.facts_page') }}" class="sidebar-link">
+                    <i class="bi bi-lightbulb-fill"></i>
+                    <span data-i18n="nav_manage_facts">Manage Facts</span>
+                </a>
+                <a href="{{ url_for('manage.rules_page') }}" class="sidebar-link">
+                    <i class="bi bi-diagram-3-fill"></i>
+                    <span data-i18n="nav_business_rules">Business Rules</span>
+                </a>
+                <a href="{{ url_for('manage.questionnaires_page') }}" class="sidebar-link">
+                    <i class="bi bi-patch-question-fill"></i>
+                    <span data-i18n="nav_questionnaires">Questionnaires</span>
+                </a>
 
-                {% if not session.get('is_admin') %}
-                <div class="sidebar-cta">
-                    <div class="sidebar-cta-content">
-                        <strong class="d-inline-block mb-2">Upgrade to Pro</strong>
-                        <div class="mb-3 text-xs">
-                            Get more features and unlock the full potential of Career Guide.
-                        </div>
-                        <div class="d-grid">
-                            <a href="#" class="btn btn-light">Upgrade to Pro</a>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
+                <div class="nav-category" data-i18n="nav_audit">System & Audit</div>
+                <a href="{{ url_for('auth.admin_export_activities') }}" class="sidebar-link">
+                    <i class="bi bi-file-earmark-spreadsheet-fill"></i>
+                    <span data-i18n="nav_export_csv">Export CSV Logs</span>
+                </a>
+                <a href="{{ url_for('auth.account') }}" class="sidebar-link">
+                    <i class="bi bi-person-circle"></i>
+                    <span data-i18n="nav_my_profile">My Profile</span>
+                </a>
             </div>
-        </nav>
 
-        <div class="main">
-            <nav class="navbar navbar-expand navbar-light navbar-bg">
-                <a class="sidebar-toggle js-sidebar-toggle">
-                    <span class="hamburger"></span>
+            <div class="sidebar-user d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold small text-dark">{{ session.get('username') or 'Admin' }}</div>
+                        <div class="text-muted" style="font-size: 0.72rem;">System Administrator</div>
+                    </div>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-sm text-danger" title="Logout">
+                    <i class="bi bi-box-arrow-right fs-5"></i>
                 </a>
+            </div>
+        </aside>
 
-                <div class="navbar-collapse collapse">
-                    <ul class="navbar-nav navbar-align">
-                        <li class="nav-item dropdown">
-                            <a class="nav-icon dropdown-toggle" href="#" id="alertsDropdown" data-bs-toggle="dropdown">
-                                <div class="position-relative">
-                                    <i class="bi bi-bell-fill"></i>
-                                    <span class="indicator">4</span>
-                                </div>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end py-0" aria-labelledby="alertsDropdown">
-                                <div class="dropdown-menu-header">
-                                    4 New Notifications
-                                </div>
-                                <div class="list-group">
-                                    <a href="#" class="list-group-item">
-                                        <div class="row g-0 align-items-center">
-                                            <div class="col-2">
-                                                <i class="bi bi-exclamation-triangle-fill text-danger"></i>
-                                            </div>
-                                            <div class="col-10">
-                                                <div class="text-dark">System Update Required</div>
-                                                <div class="text-muted small mt-1">A new version of the system is available</div>
-                                                <div class="text-muted small mt-1">5m ago</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                    <a href="#" class="list-group-item">
-                                        <div class="row g-0 align-items-center">
-                                            <div class="col-2">
-                                                <i class="bi bi-bell-fill text-warning"></i>
-                                            </div>
-                                            <div class="col-10">
-                                                <div class="text-dark">New Student Registration</div>
-                                                <div class="text-muted small mt-1">5 new employees registered today</div>
-                                                <div class="text-muted small mt-1">2h ago</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                    <a href="#" class="list-group-item">
-                                        <div class="row g-0 align-items-center">
-                                            <div class="col-2">
-                                                <i class="bi bi-house-door-fill text-primary"></i>
-                                            </div>
-                                            <div class="col-10">
-                                                <div class="text-dark">Database Backup</div>
-                                                <div class="text-muted small mt-1">Scheduled backup completed successfully</div>
-                                                <div class="text-muted small mt-1">3d ago</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                    <a href="#" class="list-group-item">
-                                        <div class="row g-0 align-items-center">
-                                            <div class="col-2">
-                                                <i class="bi bi-person-plus-fill text-success"></i>
-                                            </div>
-                                            <div class="col-10">
-                                                <div class="text-dark">New Admin User</div>
-                                                <div class="text-muted small mt-1">New administrator account created</div>
-                                                <div class="text-muted small mt-1">5d ago</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
-                                <div class="dropdown-menu-footer">
-                                    <a href="#" class="text-muted">Show all notifications</a>
-                                </div>
-                            </div>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-icon dropdown-toggle d-inline-block d-sm-none" href="#" data-bs-toggle="dropdown">
-                                <i class="bi bi-gear-fill"></i>
-                            </a>
-
-                            <a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
-                                <img src="{{ url_for('static', filename='uploads/' + user.profile_image) if user and user.profile_image else 'https://picsum.photos/seed/' + (session.username or 'user') + '/32/32.jpg' }}" class="avatar img-fluid rounded me-1" alt="User" style="object-fit: cover;" />
-                                <span class="text-dark">{{ session.username }}</span>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-end">
-                                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal"><i class="bi bi-person me-2"></i> Profile</a>
-                                <a class="dropdown-item" href="#"><i class="bi bi-graph-up me-2"></i> Analytics</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i> Settings & Privacy</a>
-                                <a class="dropdown-item" href="#"><i class="bi bi-question-circle me-2"></i> Help Center</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right me-2"></i> Log out</a>
-                            </div>
-                        </li>
-                    </ul>
+        <!-- Main Content View -->
+        <div class="main-container">
+            <!-- Top App Header -->
+            <header class="top-header">
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-light d-lg-none border" id="sidebarToggleBtn">
+                        <i class="bi bi-list fs-5"></i>
+                    </button>
+                    <div>
+                        <h4 class="fw-bold mb-0 fs-5" data-i18n="exec_dashboard_title">Executive Dashboard</h4>
+                        <div class="text-muted small" data-i18n="exec_dashboard_sub">Student Career Guidance & Inference System</div>
+                    </div>
                 </div>
-            </nav>
 
-            <main class="content">
-                <div class="container-fluid p-0">
-                    <!-- Page Header -->
-                    <div class="page-header">
-                        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center">
-                            <h1 class="page-title">
-                                {% if session.get('is_admin') %}
-                                Admin Dashboard
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Dark / Light Mode Switcher -->
+                    <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                        <i class="bi bi-moon-stars-fill text-primary"></i>
+                    </button>
+
+                    <!-- Language Switcher Dropdown (EN / KH) -->
+                    <div class="dropdown me-2">
+                        <button class="lang-selector-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Change Language">
+                            <span class="lang-btn-text">🇺🇸 EN</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4 p-2 mt-1">
+                            <li>
+                                <button class="dropdown-item rounded-3 py-2 d-flex align-items-center gap-2" onclick="setLanguage('en')" data-lang-option="en">
+                                    <span>🇺🇸</span> English (EN)
+                                </button>
+                            </li>
+                            <li>
+                                <button class="dropdown-item rounded-3 py-2 d-flex align-items-center gap-2" onclick="setLanguage('kh')" data-lang-option="kh">
+                                    <span>🇰🇭</span> ភាសាខ្មែរ (Khmer)
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <button type="button" class="btn btn-primary rounded-pill px-3 py-2 fw-semibold shadow-sm d-flex align-items-center gap-2 small" data-bs-toggle="modal" data-bs-target="#createStudentModal">
+                        <i class="bi bi-person-plus-fill"></i>
+                        <span data-i18n="btn_add_student">Add Student</span>
+                    </button>
+                    <a href="{{ url_for('auth.admin_export_activities') }}" class="btn btn-outline-secondary rounded-pill px-3 py-2 fw-semibold d-flex align-items-center gap-2 small">
+                        <i class="bi bi-download"></i>
+                        <span class="d-none d-sm-inline" data-i18n="btn_export_data">Export Data</span>
+                    </a>
+                </div>
+            </header>
+
+            <!-- Main Dashboard Body -->
+            <main class="p-4 flex-grow-1">
+                
+                <!-- KPI Stat Cards Grid -->
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                                <i class="bi bi-people-fill"></i>
+                            </div>
+                            <div>
+                                <div class="stat-label" data-i18n="stat_total_students">Total Students</div>
+                                <div class="stat-value">{{ total_users or 0 }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-success bg-opacity-10 text-success">
+                                <i class="bi bi-activity"></i>
+                            </div>
+                            <div>
+                                <div class="stat-label" data-i18n="stat_system_activities">System Activities</div>
+                                <div class="stat-value">{{ total_activities or 0 }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                                <i class="bi bi-lightbulb-fill"></i>
+                            </div>
+                            <div>
+                                <div class="stat-label" data-i18n="stat_knowledge_facts">Knowledge Facts</div>
+                                <div class="stat-value">{{ total_facts or 0 }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="stat-card">
+                            <div class="stat-icon bg-info bg-opacity-10 text-info">
+                                <i class="bi bi-diagram-3-fill"></i>
+                            </div>
+                            <div>
+                                <div class="stat-label" data-i18n="stat_business_rules">Business Rules</div>
+                                <div class="stat-value">{{ total_rules or 0 }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row g-4 mb-4">
+                    <!-- Registrations & Activity Trend Chart -->
+                    <div class="col-lg-8">
+                        <div class="dash-card h-100">
+                            <div class="dash-card-header">
+                                <h3 class="dash-card-title">
+                                    <i class="bi bi-graph-up text-primary"></i> <span data-i18n="chart_registrations_title">Monthly Student Registrations</span>
+                                </h3>
+                                <span class="badge bg-light text-dark border" data-i18n="badge_current_year">Current Year</span>
+                            </div>
+                            <div class="dash-card-body">
+                                <div style="height: 280px;">
+                                    <canvas id="registrationChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Career Category Distribution Chart -->
+                    <div class="col-lg-4">
+                        <div class="dash-card h-100">
+                            <div class="dash-card-header">
+                                <h3 class="dash-card-title">
+                                    <i class="bi bi-pie-chart-fill text-accent"></i> <span data-i18n="chart_careers_title">Recommended Careers</span>
+                                </h3>
+                            </div>
+                            <div class="dash-card-body d-flex flex-column align-items-center justify-content-center">
+                                <div style="height: 240px; width: 100%;">
+                                    <canvas id="categoryChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student Management Table Section -->
+                <div class="dash-card">
+                    <div class="dash-card-header flex-wrap gap-3">
+                        <div>
+                            <h3 class="dash-card-title">
+                                <i class="bi bi-mortarboard-fill text-primary"></i> <span data-i18n="table_students_title">Enrolled Students & Assessment Status</span>
+                            </h3>
+                            <div class="text-muted small" data-i18n="table_students_sub">Manage candidate assessments, history, and records</div>
+                        </div>
+
+                        <!-- Search & Sorting Filter Bar -->
+                        <form method="get" action="{{ url_for('auth.admin_dashboard') }}" class="d-flex align-items-center gap-2 flex-wrap">
+                            <div class="input-group input-group-sm" style="max-width: 220px;">
+                                <span class="input-group-text"><i class="bi bi-search text-muted"></i></span>
+                                <input type="text" name="search" class="form-control" data-i18n-placeholder="search_placeholder" placeholder="Search student..." value="{{ search_query or '' }}">
+                            </div>
+
+                            <select name="sort_by" class="form-select form-select-sm" style="width: auto;">
+                                <option value="latest" {% if sort_by == 'latest' %}selected{% endif %} data-i18n="sort_latest">Sort: Latest</option>
+                                <option value="username" {% if sort_by == 'username' %}selected{% endif %} data-i18n="sort_username">Sort: Username</option>
+                                <option value="count" {% if sort_by == 'count' %}selected{% endif %} data-i18n="sort_count">Sort: Activity Count</option>
+                            </select>
+
+                            <button type="submit" class="btn btn-sm btn-primary px-3 rounded-pill" data-i18n="btn_apply">Apply</button>
+                            {% if search_query %}
+                            <a href="{{ url_for('auth.admin_dashboard') }}" class="btn btn-sm btn-light border rounded-pill" data-i18n="btn_reset">Reset</a>
+                            {% endif %}
+                        </form>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th data-i18n="col_student">Student</th>
+                                    <th data-i18n="col_status">Assessment Status</th>
+                                    <th data-i18n="col_career">Career Recommendation</th>
+                                    <th data-i18n="col_confidence">Confidence</th>
+                                    <th data-i18n="col_total_acts">Total Activities</th>
+                                    <th data-i18n="col_last_act">Last Activity</th>
+                                    <th class="text-end" data-i18n="col_actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for u in users %}
+                                <tr id="userRow-{{ u.id }}">
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <img src="{{ url_for('static', filename='uploads/' + u.profile_image) if u.profile_image else 'https://ui-avatars.com/api/?name=' + u.username + '&background=eef2ff&color=4361ee' }}" 
+                                                 alt="Avatar" class="rounded-circle" width="38" height="38" style="object-fit:cover;">
+                                            <div>
+                                                <div class="fw-bold">{{ u.first_name or u.username }} {{ u.last_name or '' }}</div>
+                                                <div class="text-muted small">{{ u.email }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if u.assessment_completed %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill">
+                                            <i class="bi bi-check-circle-fill me-1"></i> <span data-i18n="badge_completed">Completed</span>
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 rounded-pill">
+                                            <i class="bi bi-clock-fill me-1"></i> <span data-i18n="badge_pending">Pending</span>
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if u.recommended_career %}
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill fw-semibold">
+                                            {{ u.recommended_career }}
+                                        </span>
+                                        {% else %}
+                                        <span class="text-muted small">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if u.assessment_completed %}
+                                        <span class="fw-bold">{{ u.confidence_score }}%</span>
+                                        {% else %}
+                                        <span class="text-muted small">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">{{ activity_counts.get(u.id, 0) }} logs</span>
+                                    </td>
+                                    <td>
+                                        {% set latest = latest_activities.get(u.id) %}
+                                        {% if latest and latest.created_at %}
+                                            <small class="text-muted">{{ latest.created_at.strftime('%b %d, %Y - %H:%M') }}</small>
+                                        {% else %}
+                                            <small class="text-muted">No activities</small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-1">
+                                            <a href="{{ url_for('auth.admin_user_activities_page', user_id=u.id) }}" class="btn-action" title="View Detailed Logs">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <button type="button" class="btn-action delete" title="Delete Student" onclick="confirmDeleteUser({{ u.id }}, '{{ u.username }}')">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
                                 {% else %}
-                                Employee Dashboard
-                                {% endif %}
-                            </h1>
-                            <div class="btn-toolbar mb-2 mb-md-0">
-                                <div class="btn-group me-2">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportData('pdf')">
-                                        <i class="bi bi-file-pdf"></i> Export PDF
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportData('excel')">
-                                        <i class="bi bi-file-excel"></i> Export Excel
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
-                                        <i class="bi bi-printer"></i> Print
-                                    </button>
-                                </div>
-                                <div class="dropdown">
-                                    <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="bi bi-calendar3"></i> This Week
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="#">Today</a></li>
-                                        <li><a class="dropdown-item" href="#">This Week</a></li>
-                                        <li><a class="dropdown-item" href="#">This Month</a></li>
-                                        <li><a class="dropdown-item" href="#">This Year</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="#">Custom Range</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {% if session.get('is_admin') %}
-                    <!-- Admin Overview Panel -->
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div>
-                                    <h5 class="mb-0">Admin — Assessments Overview</h5>
-                                    <small class="text-muted">Summary across all employees</small>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <form class="d-flex" method="get" action="{{ url_for('auth.admin_dashboard') }}">
-                                        <input name="search" value="{{ search_query or '' }}" class="form-control form-control-sm me-2" placeholder="Search username..." />
-                                        <select name="sort_by" class="form-select form-select-sm me-2">
-                                            <option value="latest" {% if sort_by=='latest' %}selected{% endif %}>Sort: Latest</option>
-                                            <option value="username" {% if sort_by=='username' %}selected{% endif %}>Sort: Username</option>
-                                            <option value="count" {% if sort_by=='count' %}selected{% endif %}>Sort: Activity Count</option>
-                                        </select>
-                                        <select name="sort_dir" class="form-select form-select-sm me-2">
-                                            <option value="desc" {% if sort_dir=='desc' %}selected{% endif %}>Desc</option>
-                                            <option value="asc" {% if sort_dir=='asc' %}selected{% endif %}>Asc</option>
-                                        </select>
-                                        <button class="btn btn-sm btn-primary" type="submit">Apply</button>
-                                    </form>
-                                    <a href="{{ url_for('auth.admin_export_activities') }}" class="btn btn-sm btn-outline-secondary">Export CSV</a>
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col-md-3">
-                                    <div class="card p-3 mb-2">
-                                        <small>Total Employees</small>
-                                        <h4>{{ total_users or 0 }}</h4>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card p-3 mb-2">
-                                        <small>Total Activities</small>
-                                        <h4>{{ total_activities or 0 }}</h4>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card p-3 mb-2">
-                                        <small>Total Facts</small>
-                                        <h4>{{ total_facts or 0 }}</h4>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card p-3 mb-2">
-                                        <small>Total Rules</small>
-                                        <h4>{{ total_rules or 0 }}</h4>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="table-responsive">
-                                <table class="table table-striped table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Username</th>
-                                            <th>Email</th>
-                                            <th>Latest</th>
-                                            <th>Count</th>
-                                            <th>When</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for u in users %}
-                                        {% set latest = latest_activities.get(u.id) if latest_activities is defined else None %}
-                                        {% set count = activity_counts.get(u.id) if activity_counts is defined else 0 %}
-                                        <tr>
-                                            <td>{{ loop.index }}</td>
-                                            <td>{{ u.username }}</td>
-                                            <td>{{ u.email }}</td>
-                                            <td>{{ latest.description if latest else '—' }}</td>
-                                            <td>{{ count }}</td>
-                                            <td>{{ latest.created_at.strftime('%Y-%m-%d %H:%M') if latest and latest.created_at else '—' }}</td>
-                                            <td>
-                                                <div class="btn-group">
-                                                    <a href="{{ url_for('auth.admin_user_activities_page', user_id=u.id) }}" class="btn btn-sm btn-primary">View</a>
-                                                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteUser({{ u.id }}, '{{ u.username }}')">Delete</button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    {% else %}
-                    <!-- User Profile Card -->
-                    <div class="row mb-4 fade-in">
-                        <div class="col-lg-8">
-                            <div class="card profile-card">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-8">
-                                            <h5 class="card-title mb-3">User Profile</h5>
-                                            <p class="mb-2"><strong>Username:</strong> <span id="userUsername">{{ user.username }}</span></p>
-                                            <p class="mb-2"><strong>User ID:</strong> <span id="userId">{{ session.user_id }}</span></p>
-                                            <p class="mb-2"><strong>Assessment Status:</strong> <span id="assessmentStatus" class="badge bg-success">Completed</span></p>
-                                            <p class="mb-2"><strong>Recommended Career:</strong> <span id="recommendedCareer" class="text-white font-weight-bold">Software Engineer</span></p>
-                                            <p class="mb-0"><strong>Career Confidence:</strong> <span id="careerConfidence">95%</span></p>
-                                        </div>
-                                        <div class="col-md-4 text-center">
-                                            <img src="{{ url_for('static', filename='uploads/' + user.profile_image) if user and user.profile_image else 'https://picsum.photos/seed/' + (session.username or 'user') + '/100/100' }}" alt="User Avatar" class="profile-avatar" style="object-fit: cover;">
-                                            <p class="mt-3"><a href="{{ url_for('auth.assessment') }}" class="btn btn-sm btn-primary"><i class="bi bi-pencil-square me-1"></i> Take Assessment</a></p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Statistics Cards -->
-                    <div class="row">
-                        <div class="col-xl-3 col-md-6 mb-4 fade-in">
-                            <div class="card card-stats primary">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col">
-                                            <h5 class="card-stats-title text-uppercase text-muted mb-1">Total Employees</h5>
-                                            <span class="card-stats-value">256</span>
-                                            <div class="card-stats-change positive">
-                                                <i class="bi bi-arrow-up"></i> 12%
-                                            </div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="bi bi-people-fill card-stats-icon"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer bg-transparent">
-                                    <a class="text-muted stretched-link" href="#students">View Details</a>
-                                    <i class="bi bi-arrow-right float-end"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-3 col-md-6 mb-4 fade-in">
-                            <div class="card card-stats success">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col">
-                                            <h5 class="card-stats-title text-uppercase text-muted mb-1">Total Careers</h5>
-                                            <span class="card-stats-value">16</span>
-                                            <div class="card-stats-change positive">
-                                                <i class="bi bi-arrow-up"></i> 8%
-                                            </div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="bi bi-briefcase-fill card-stats-icon"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer bg-transparent">
-                                    <a class="text-muted stretched-link" href="#careers">View Details</a>
-                                    <i class="bi bi-arrow-right float-end"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-3 col-md-6 mb-4 fade-in">
-                            <div class="card card-stats info">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col">
-                                            <h5 class="card-stats-title text-uppercase text-muted mb-1">Total Facts</h5>
-                                            <span class="card-stats-value">{{ total_facts or 0 }}</span>
-                                            <div class="card-stats-change positive">
-                                                <i class="bi bi-arrow-up"></i> 20%
-                                            </div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="bi bi-lightbulb-fill card-stats-icon"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer bg-transparent">
-                                    <a class="text-muted stretched-link" href="#knowledge">View Details</a>
-                                    <i class="bi bi-arrow-right float-end"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-3 col-md-6 mb-4 fade-in">
-                            <div class="card card-stats warning">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col">
-                                            <h5 class="card-stats-title text-uppercase text-muted mb-1">Total Rules</h5>
-                                            <span class="card-stats-value">{{ total_rules or 0 }}</span>
-                                            <div class="card-stats-change negative">
-                                                <i class="bi bi-arrow-down"></i> 5%
-                                            </div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="bi bi-diagram-3-fill card-stats-icon"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-footer bg-transparent">
-                                    <a class="text-muted stretched-link" href="#knowledge">View Details</a>
-                                    <i class="bi bi-arrow-right float-end"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    <!-- Charts Section -->
-                    <div class="row" id="analytics">
-                        <div class="col-xl-6 col-lg-6 mb-4 fade-in">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i class="bi bi-graph-up me-1"></i>
-                                        Career Recommendations by Month
-                                    </div>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="areaChartDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bi bi-three-dots"></i>
-                                        </button>
-                                        <ul class="dropdown-menu" aria-labelledby="areaChartDropdown">
-                                            <li><a class="dropdown-item" href="#" onclick="updateChart('area', 'week')">Week</a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="updateChart('area', 'month')">Month</a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="updateChart('area', 'year')">Year</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="chart-container">
-                                        <canvas id="areaChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-6 col-lg-6 mb-4 fade-in" id="students-table-section">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i class="bi bi-pie-chart-fill me-1"></i>
-                                        Popular Career Fields
-                                    </div>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="pieChartDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bi bi-three-dots"></i>
-                                        </button>
-                                        <ul class="dropdown-menu" aria-labelledby="pieChartDropdown">
-                                            <li><a class="dropdown-item" href="#" onclick="updateChart('pie', 'thisWeek')">This Week</a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="updateChart('pie', 'thisMonth')">This Month</a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="updateChart('pie', 'thisYear')">This Year</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="chart-container">
-                                        <canvas id="pieChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tables Section -->
-                    <div class="row">
-                        <div class="col-xl-6 col-lg-6 mb-4 fade-in" id="careers-table-section">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i class="bi bi-bar-chart-fill me-1"></i>
-                                        Most Recommended Careers
-                                    </div>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="careerDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bi bi-three-dots"></i>
-                                        </button>
-                                        <ul class="dropdown-menu" aria-labelledby="careerDropdown">
-                                            <li><a class="dropdown-item" href="#" onclick="refreshCareerData()">Refresh</a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="exportCareerData()">Export</a></li>
-                                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addCareerModal">Add New</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="text-center mb-4">
-                                        <h4 class="font-weight-bold">Software Engineer</h4>
-                                        <div class="mt-2 mb-4">
-                                            <div class="progress" style="height: 25px;">
-                                                <div class="progress-bar bg-primary" role="progressbar" style="width: 95%;" aria-valuenow="95" aria-valuemin="0" aria-valuemax="100">95%</div>
-                                            </div>
-                                            <p class="mt-2 text-muted">Based on 95% of recommendations</p>
-                                        </div>
-                                        <div class="row text-center">
-                                            <div class="col">
-                                                <h5 class="font-weight-bold">8</h5>
-                                                <p class="text-muted">Skills Required</p>
-                                            </div>
-                                            <div class="col">
-                                                <h5 class="font-weight-bold">4.5</h5>
-                                                <p class="text-muted">Average Rating</p>
-                                            </div>
-                                            <div class="col">
-                                                <h5 class="font-weight-bold">$85K</h5>
-                                                <p class="text-muted">Average Salary</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="table-responsive">
-                                        <table class="table table-borderless" id="careerTable" width="100%" cellspacing="0">
-                                            <thead>
-                                                <tr>
-                                                    <th>Career</th>
-                                                    <th>Recommendations</th>
-                                                    <th>Avg. Salary</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>Software Engineer</td>
-                                                    <td>95%</td>
-                                                    <td>$85K</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Data Scientist</td>
-                                                    <td>85%</td>
-                                                    <td>$95K</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>IT Manager</td>
-                                                    <td>75%</td>
-                                                    <td>$110K</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Web Developer</td>
-                                                    <td>70%</td>
-                                                    <td>$75K</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-xl-6 col-lg-6 mb-4 fade-in">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i class="bi bi-table me-1"></i>
-                                        Recent Employees Results
-                                    </div>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="studentDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bi bi-three-dots"></i>
-                                        </button>
-                                        <ul class="dropdown-menu" aria-labelledby="studentDropdown">
-                                            <li><a class="dropdown-item" href="#" onclick="refreshStudentData()">Refresh</a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="exportStudentData()">Export</a></li>
-                                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">Add New</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover" id="studentTable" width="100%" cellspacing="0">
-                                            <thead>
-                                                <tr>
-                                                    <th>Employee</th>
-                                                    <th>Recommended Career</th>
-                                                    <th>Confidence</th>
-                                                    <th>Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>
-                                                        <div class="d-flex align-items-center">
-                                                            <img src="https://picsum.photos/seed/seyha/40/40.jpg" alt="Student" class="rounded-circle me-2" width="40" height="40">
-                                                            <div>
-                                                                <div class="fw-bold">seyha</div>
-                                                                <div class="text-muted small">seyha@example.com</div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td>Software Engineer</td>
-                                                    <td>
-                                                        <div class="d-flex align-items-center">
-                                                            <div class="progress me-2" style="width: 100px; height: 10px;">
-                                                                <div class="progress-bar bg-success" role="progressbar" style="width: 85%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
-                                                            </div>
-                                                            <span>85%</span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <div class="dropdown">
-                                                            <button class="btn btn-sm btn-light" type="button" id="studentAction1" data-bs-toggle="dropdown" aria-expanded="false">
-                                                                <i class="bi bi-three-dots-vertical"></i>
-                                                            </button>
-                                                            <ul class="dropdown-menu" aria-labelledby="studentAction1">
-                                                                <li><a class="dropdown-item" href="#" onclick="viewStudentDetails('seyha')"><i class="bi bi-eye me-2"></i>View Details</a></li>
-                                                                <li><a class="dropdown-item" href="#" onclick="editStudent('seyha')"><i class="bi bi-pencil me-2"></i>Edit</a></li>
-                                                                <li><a class="dropdown-item" href="#" onclick="rerunAssessment('seyha')"><i class="bi bi-arrow-clockwise me-2"></i>Rerun Assessment</a></li>
-                                                                <li><hr class="dropdown-divider"></li>
-                                                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteStudent('seyha')"><i class="bi bi-trash me-2"></i>Delete</a></li>
-                                                            </ul>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <div class="d-flex align-items-center">
-                                                            <img src="https://picsum.photos/seed/satik/40/40.jpg" alt="Student" class="rounded-circle me-2" width="40" height="40">
-                                                            <div>
-                                                                <div class="fw-bold">Satik</div>
-                                                                <div class="text-muted small">satik@example.com</div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td>IT Officer</td>
-                                                    <td>
-                                                        <div class="d-flex align-items-center">
-                                                            <div class="progress me-2" style="width: 100px; height: 10px;">
-                                                                <div class="progress-bar bg-success" role="progressbar" style="width: 95%;" aria-valuenow="95" aria-valuemin="0" aria-valuemax="100"></div>
-                                                            </div>
-                                                            <span>95%</span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <div class="dropdown">
-                                                            <button class="btn btn-sm btn-light" type="button" id="studentAction2" data-bs-toggle="dropdown" aria-expanded="false">
-                                                                <i class="bi bi-three-dots-vertical"></i>
-                                                            </button>
-                                                            <ul class="dropdown-menu" aria-labelledby="studentAction2">
-                                                                <li><a class="dropdown-item" href="#" onclick="viewStudentDetails('satik')"><i class="bi bi-eye me-2"></i>View Details</a></li>
-                                                                <li><a class="dropdown-item" href="#" onclick="editStudent('satik')"><i class="bi bi-pencil me-2"></i>Edit</a></li>
-                                                                <li><a class="dropdown-item" href="#" onclick="rerunAssessment('satik')"><i class="bi bi-arrow-clockwise me-2"></i>Rerun Assessment</a></li>
-                                                                <li><hr class="dropdown-divider"></li>
-                                                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteStudent('satik')"><i class="bi bi-trash me-2"></i>Delete</a></li>
-                                                            </ul>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <div class="d-flex align-items-center">
-                                                            <img src="https://picsum.photos/seed/chantha/40/40.jpg" alt="Student" class="rounded-circle me-2" width="40" height="40">
-                                                            <div>
-                                                                <div class="fw-bold">Chantha</div>
-                                                                <div class="text-muted small">chantha@example.com</div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td>Data Analyst</td>
-                                                    <td>
-                                                        <div class="d-flex align-items-center">
-                                                            <div class="progress me-2" style="width: 100px; height: 10px;">
-                                                                <div class="progress-bar bg-info" role="progressbar" style="width: 78%;" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
-                                                            </div>
-                                                            <span>78%</span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <div class="dropdown">
-                                                            <button class="btn btn-sm btn-light" type="button" id="studentAction3" data-bs-toggle="dropdown" aria-expanded="false">
-                                                                <i class="bi bi-three-dots-vertical"></i>
-                                                            </button>
-                                                            <ul class="dropdown-menu" aria-labelledby="studentAction3">
-                                                                <li><a class="dropdown-item" href="#" onclick="viewStudentDetails('chantha')"><i class="bi bi-eye me-2"></i>View Details</a></li>
-                                                                <li><a class="dropdown-item" href="#" onclick="editStudent('chantha')"><i class="bi bi-pencil me-2"></i>Edit</a></li>
-                                                                <li><a class="dropdown-item" href="#" onclick="rerunAssessment('chantha')"><i class="bi bi-arrow-clockwise me-2"></i>Rerun Assessment</a></li>
-                                                                <li><hr class="dropdown-divider"></li>
-                                                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteStudent('chantha')"><i class="bi bi-trash me-2"></i>Delete</a></li>
-                                                            </ul>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <div class="d-flex align-items-center">
-                                                            <img src="https://picsum.photos/seed/sophea/40/40.jpg" alt="Student" class="rounded-circle me-2" width="40" height="40">
-                                                            <div>
-                                                                <div class="fw-bold">Sophea</div>
-                                                                <div class="text-muted small">sophea@example.com</div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td>Web Developer</td>
-                                                    <td>
-                                                        <div class="d-flex align-items-center">
-                                                            <div class="progress me-2" style="width: 100px; height: 10px;">
-                                                                <div class="progress-bar bg-warning" role="progressbar" style="width: 92%;" aria-valuenow="92" aria-valuemin="0" aria-valuemax="100"></div>
-                                                            </div>
-                                                            <span>92%</span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <div class="dropdown">
-                                                            <button class="btn btn-sm btn-light" type="button" id="studentAction4" data-bs-toggle="dropdown" aria-expanded="false">
-                                                                <i class="bi bi-three-dots-vertical"></i>
-                                                            </button>
-                                                            <ul class="dropdown-menu" aria-labelledby="studentAction4">
-                                                                <li><a class="dropdown-item" href="#" onclick="viewStudentDetails('sophea')"><i class="bi bi-eye me-2"></i>View Details</a></li>
-                                                                <li><a class="dropdown-item" href="#" onclick="editStudent('sophea')"><i class="bi bi-pencil me-2"></i>Edit</a></li>
-                                                                <li><a class="dropdown-item" href="#" onclick="rerunAssessment('sophea')"><i class="bi bi-arrow-clockwise me-2"></i>Rerun Assessment</a></li>
-                                                                <li><hr class="dropdown-divider"></li>
-                                                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteStudent('sophea')"><i class="bi bi-trash me-2"></i>Delete</a></li>
-                                                            </ul>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- System Activity -->
-                    <div class="row" id="system-activity-section">
-                        <div class="col-12 mb-4 fade-in">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i class="bi bi-clock-history me-1"></i>
-                                        Recent System Activity
-                                    </div>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="activityDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bi bi-three-dots"></i>
-                                        </button>
-                                        <ul class="dropdown-menu" aria-labelledby="activityDropdown">
-                                            <li><a class="dropdown-item" href="#" onclick="refreshActivityData()">Refresh</a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="exportActivityData()">Export</a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="clearActivityData()">Clear All</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="activity-feed">
-                                        <div class="timeline">
-                                            <div class="timeline-item">
-                                                <div class="timeline-point primary"></div>
-                                                <div class="timeline-content">
-                                                    <div class="d-flex justify-content-between">
-                                                        <div>
-                                                            <h6 class="mb-1">New employee registered</h6>
-                                                            <p class="text-muted mb-0">John Doe completed the career assessment</p>
-                                                        </div>
-                                                        <div class="text-end">
-                                                            <small class="text-muted">2 hours ago</small>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="timeline-item">
-                                                <div class="timeline-point success"></div>
-                                                <div class="timeline-content">
-                                                    <div class="d-flex justify-content-between">
-                                                        <div>
-                                                            <h6 class="mb-1">System backup completed</h6>
-                                                            <p class="text-muted mb-0">Database backup was successful</p>
-                                                        </div>
-                                                        <div class="text-end">
-                                                            <small class="text-muted">5 hours ago</small>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="timeline-item">
-                                                <div class="timeline-point warning"></div>
-                                                <div class="timeline-content">
-                                                    <div class="d-flex justify-content-between">
-                                                        <div>
-                                                            <h6 class="mb-1">Career recommendation updated</h6>
-                                                            <p class="text-muted mb-0">Software Engineer career path was updated with new skills</p>
-                                                        </div>
-                                                        <div class="text-end">
-                                                            <small class="text-muted">1 day ago</small>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="timeline-item">
-                                                <div class="timeline-point info"></div>
-                                                <div class="timeline-content">
-                                                    <div class="d-flex justify-content-between">
-                                                        <div>
-                                                            <h6 class="mb-1">New rule added</h6>
-                                                            <p class="text-muted mb-0">Admin added a new rule for Data Science career path</p>
-                                                        </div>
-                                                        <div class="text-end">
-                                                            <small class="text-muted">2 days ago</small>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                                <tr>
+                                    <td colspan="7" class="text-center py-5 text-muted">
+                                        <i class="bi bi-person-x fs-1 d-block mb-2 opacity-50"></i>
+                                        <span data-i18n="no_students_found">No students found matching your criteria.</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+
             </main>
 
-            <footer class="footer">
-                <div class="container-fluid">
-                    <div class="row text-muted">
-                        <div class="col-6 text-start">
-                            <p class="mb-0">
-                                <a href="#" class="text-muted">
-                                    <strong>Employee Career Guidance Expert System</strong>
-                                </a>
-                            </p>
-                        </div>
-                        <div class="col-6 text-end">
-                            <ul class="list-inline">
-                                <li class="list-inline-item">
-                                    <a class="text-muted" href="#">Support</a>
-                                </li>
-                                <li class="list-inline-item">
-                                    <a class="text-muted" href="#">Help Center</a>
-                                </li>
-                                <li class="list-inline-item">
-                                    <a class="text-muted" href="#">Privacy</a>
-                                </li>
-                                <li class="list-inline-item">
-                                    <a class="text-muted" href="#">Terms</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
+            <!-- Footer -->
+            <footer class="bg-white border-top py-3 px-4 text-muted small mt-auto">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>&copy; 2026 Career Guidance Expert Management System</div>
+                    <div class="text-primary fw-semibold">Standard System v2.0</div>
                 </div>
             </footer>
         </div>
     </div>
 
-    <!-- Add Employee Modal -->
-    <div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addEmployeeModalLabel">Add New Employee</h5>
+    <!-- Create Student Modal -->
+    <div class="modal fade" id="createStudentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-0 pt-4 px-4 pb-0">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-person-plus-fill text-primary me-2"></i><span data-i18n="modal_add_student_title">Add Student Candidate</span>
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <form id="addEmployeeForm">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="firstName" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="firstName" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="lastName" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="lastName" required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="phone" class="form-label">Phone</label>
-                                <input type="tel" class="form-control" id="phone">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="dateOfBirth" class="form-label">Date of Birth</label>
-                                <input type="date" class="form-control" id="dateOfBirth">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="education" class="form-label">Education Level</label>
-                                <select class="form-select" id="education">
-                                    <option selected>Select Education Level</option>
-                                    <option value="high-school">High School</option>
-                                    <option value="bachelor">Bachelor's Degree</option>
-                                    <option value="master">Master's Degree</option>
-                                    <option value="phd">PhD</option>
-                                </select>
-                            </div>
+                <form id="createStudentForm">
+                    <div class="modal-body px-4 pt-3">
+                        <div id="createStudentAlert"></div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold"><span data-i18n="modal_email_label">Student Email Address</span> <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control rounded-3" id="studentEmail" required placeholder="student@example.com">
                         </div>
                         <div class="mb-3">
-                            <label for="interests" class="form-label">Areas of Interest</label>
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="technology" id="interestTech">
-                                        <label class="form-check-label" for="interestTech">Technology</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="healthcare" id="interestHealth">
-                                        <label class="form-check-label" for="interestHealth">Healthcare</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="business" id="interestBusiness">
-                                        <label class="form-check-label" for="interestBusiness">Business</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="education" id="interestEducation">
-                                        <label class="form-check-label" for="interestEducation">Education</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="arts" id="interestArts">
-                                        <label class="form-check-label" for="interestArts">Arts</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="science" id="interestScience">
-                                        <label class="form-check-label" for="interestScience">Science</label>
-                                    </div>
-                                </div>
-                            </div>
+                            <label class="form-label small fw-bold" data-i18n="modal_username_label">Username (optional)</label>
+                            <input type="text" class="form-control rounded-3" id="studentUsername" placeholder="Auto-generated if blank">
                         </div>
-                        <div class="mb-3">
-                            <label for="notes" class="form-label">Additional Notes</label>
-                            <textarea class="form-control" id="notes" rows="3"></textarea>
+                        <div class="p-3 bg-light rounded-3 small text-muted">
+                            <i class="bi bi-info-circle me-1 text-primary"></i> <span data-i18n="modal_default_pwd_info">Default initial password will be set to: student123</span>
                         </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="saveEmployee()">Save Employee</button>
-                </div>
+                    </div>
+                    <div class="modal-footer border-0 px-4 pb-4">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal" data-i18n="btn_cancel">Cancel</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold" id="btnSubmitStudent" data-i18n="btn_create_student">Create Student</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- Add Career Modal -->
-    <div class="modal fade" id="addCareerModal" tabindex="-1" aria-labelledby="addCareerModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addCareerModalLabel">Add New Career</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addCareerForm">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="careerTitle" class="form-label">Career Title</label>
-                                <input type="text" class="form-control" id="careerTitle" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="careerCategory" class="form-label">Category</label>
-                                <select class="form-select" id="careerCategory" required>
-                                    <option selected>Select Category</option>
-                                    <option value="technology">Technology</option>
-                                    <option value="healthcare">Healthcare</option>
-                                    <option value="business">Business</option>
-                                    <option value="education">Education</option>
-                                    <option value="arts">Arts</option>
-                                    <option value="science">Science</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="minSalary" class="form-label">Minimum Salary ($)</label>
-                                <input type="number" class="form-control" id="minSalary">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="maxSalary" class="form-label">Maximum Salary ($)</label>
-                                <input type="number" class="form-control" id="maxSalary">
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="careerDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="careerDescription" rows="3" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="requiredSkills" class="form-label">Required Skills</label>
-                            <input type="text" class="form-control" id="requiredSkills" placeholder="e.g. Python, Communication, Problem Solving">
-                        </div>
-                        <div class="mb-3">
-                            <label for="educationRequirements" class="form-label">Education Requirements</label>
-                            <textarea class="form-control" id="educationRequirements" rows="2"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="saveCareer()">Save Career</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Profile Modal -->
-    <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">User Profile</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="profileForm">
-                        <div class="text-center mb-4">
-                            <div class="position-relative d-inline-block">
-                                <img id="profilePreview" src="{{ url_for('static', filename='uploads/' + user.profile_image) if user and user.profile_image else 'https://picsum.photos/seed/' + (session.username or 'user') + '/100/100' }}" class="rounded-circle mb-2" width="100" height="100" style="object-fit: cover; border: 3px solid #e3e6f0;">
-                                <label for="profileImage" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-1 shadow-sm" style="cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transform: translate(5px, -5px);">
-                                    <i class="bi bi-camera-fill" style="font-size: 14px;"></i>
-                                </label>
-                                <input type="file" id="profileImage" class="d-none" accept="image/*" onchange="previewImage(this)">
-                            </div>
-                            <h5>{{ session.username }}</h5>
-                            <p class="text-muted">{{ 'Administrator' if session.get('is_admin') else 'Employee' }}</p>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Email Address</label>
-                            <input type="email" class="form-control" id="profileEmail" value="{{ user.email if user else '' }}">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">New Password (leave blank to keep current)</label>
-                            <input type="password" class="form-control" id="profilePassword">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Scripts -->
+    <!-- Scripts: Bootstrap & Chart.js & Global Theme/Language Engine -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="{{ url_for('static', filename='js/theme-lang.js') }}"></script>
     <script>
-        // Sidebar toggle
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebarToggle = document.querySelector('.js-sidebar-toggle');
-            const sidebar = document.querySelector('.js-sidebar');
-            const main = document.querySelector('.main');
-            
-            sidebarToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('collapsed');
-                main.classList.toggle('expanded');
+        // Sidebar Toggle for Mobile
+        const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+        const mainSidebar = document.getElementById('mainSidebar');
+        if (sidebarToggleBtn) {
+            sidebarToggleBtn.addEventListener('click', () => {
+                mainSidebar.classList.toggle('show');
             });
-            
-            // Initialize charts
-            initCharts();
-            
-            // Add fade-in animation to elements
-            const fadeElements = document.querySelectorAll('.fade-in');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = 1;
-                        entry.target.style.transform = 'translateY(0)';
+        }
+
+        // Render Live Charts from Backend Data
+        document.addEventListener('DOMContentLoaded', function() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const chartTextColor = isDark ? '#9ca3af' : '#64748b';
+            if (window.Chart) {
+                Chart.defaults.color = chartTextColor;
+            }
+
+            // 1. Monthly Registration Area Chart
+            const areaCtx = document.getElementById('registrationChart');
+            if (areaCtx) {
+                const regLabels = {{ area_chart_data.labels | tojson if area_chart_data else "['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']" }};
+                const regData = {{ area_chart_data.data | tojson if area_chart_data else "[0,0,0,0,0,0,0,0,0,0,0,0]" }};
+
+                new Chart(areaCtx, {
+                    type: 'line',
+                    data: {
+                        labels: regLabels,
+                        datasets: [{
+                            label: 'New Registrations',
+                            data: regData,
+                            borderColor: '#4361ee',
+                            backgroundColor: 'rgba(67, 97, 238, 0.12)',
+                            borderWidth: 2.5,
+                            fill: true,
+                            tension: 0.35,
+                            pointBackgroundColor: '#4361ee',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { 
+                                beginAtZero: true, 
+                                grid: { color: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(156, 163, 175, 0.15)' },
+                                ticks: { color: chartTextColor }
+                            },
+                            x: { 
+                                grid: { display: false },
+                                ticks: { color: chartTextColor }
+                            }
+                        }
                     }
                 });
-            }, { threshold: 0.1 });
-            
-            fadeElements.forEach(element => {
-                element.style.opacity = 0;
-                element.style.transform = 'translateY(20px)';
-                element.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                observer.observe(element);
-            });
-        });
-        
-        // Initialize charts
-        function initCharts() {
-            // Area Chart
-            const areaCtx = document.getElementById('areaChart').getContext('2d');
-            const areaChart = new Chart(areaCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'Career Recommendations',
-                        data: [65, 78, 90, 81, 96, 105],
-                        backgroundColor: 'rgba(67, 97, 238, 0.2)',
-                        borderColor: 'rgba(67, 97, 238, 1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                display: true,
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // Pie Chart
-            const pieCtx = document.getElementById('pieChart').getContext('2d');
-            const pieChart = new Chart(pieCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Technology', 'Healthcare', 'Business', 'Education', 'Arts', 'Science'],
-                    datasets: [{
-                        data: [30, 15, 20, 10, 5, 20],
-                        backgroundColor: [
-                            'rgba(67, 97, 238, 0.8)',
-                            'rgba(6, 255, 165, 0.8)',
-                            'rgba(255, 190, 11, 0.8)',
-                            'rgba(251, 86, 7, 0.8)',
-                            'rgba(114, 9, 183, 0.8)',
-                            'rgba(76, 201, 240, 0.8)'
-                        ],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-        }
-        
-        // Function to export data
-        function exportData(format) {
-            console.log(`Exporting data as ${format.toUpperCase()}...`);
-            // Implementation for export functionality
-        }
-        
-        // Function to update chart
-        function updateChart(chartType, period) {
-            console.log(`Updating ${chartType} chart for ${period}...`);
-            // Implementation for chart update
-        }
-        
-        // Function to refresh career data
-        function refreshCareerData() {
-            console.log('Refreshing career data...');
-            // Implementation for data refresh
-        }
-        
-        // Function to export career data
-        function exportCareerData() {
-            console.log('Exporting career data...');
-            // Implementation for data export
-        }
-        
-        // Function to refresh student data
-        function refreshStudentData() {
-            console.log('Refreshing student data...');
-            // Implementation for data refresh
-        }
-        
-        // Function to export student data
-        function exportStudentData() {
-            console.log('Exporting student data...');
-            // Implementation for data export
-        }
-        
-        // Function to refresh activity data
-        function refreshActivityData() {
-            console.log('Refreshing activity data...');
-            // Implementation for data refresh
-        }
-        
-        // Function to export activity data
-        function exportActivityData() {
-            console.log('Exporting activity data...');
-            // Implementation for data export
-        }
-        
-        // Function to clear activity data
-        function clearActivityData() {
-            console.log('Clearing activity data...');
-            // Implementation for data clear
-        }
-        
-        // Function to view student details
-        function viewStudentDetails(studentId) {
-            console.log(`Viewing details for student: ${studentId}`);
-            // Implementation for viewing student details
-        }
-        
-        // Function to edit student
-        function editStudent(studentId) {
-            console.log(`Editing student: ${studentId}`);
-            // Implementation for editing student
-        }
-        
-        // Function to rerun assessment
-        function rerunAssessment(studentId) {
-            console.log(`Rerunning assessment for: ${studentId}`);
-            // Implementation for rerunning assessment
-        }
-        
-        // Function to delete student
-        function deleteStudent(studentId) {
-            if (confirm(`Are you sure you want to delete student ${studentId}?`)) {
-                console.log(`Deleting student: ${studentId}`);
-                // Implementation for deleting student
-            }
-        }
-        
-        // Function to save employee
-        function saveEmployee() {
-            console.log('Saving employee...');
-            const firstName = document.getElementById('firstName').value;
-            const lastName = document.getElementById('lastName').value;
-            const email = document.getElementById('email').value;
-            
-            if(!email || !firstName || !lastName) {
-                alert("Please fill in required fields (First Name, Last Name, Email)");
-                return;
             }
 
-            // Generate a simple username
-            const username = (firstName + lastName).toLowerCase().replace(/\s/g, '') + Math.floor(Math.random() * 1000);
+            // 2. Career Category Doughnut Chart
+            const pieCtx = document.getElementById('categoryChart');
+            if (pieCtx) {
+                const categoryData = {{ chart_categories | tojson if chart_categories else "{}" }};
+                const catLabels = Object.keys(categoryData);
+                const catValues = Object.values(categoryData);
+
+                new Chart(pieCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: catLabels.length > 0 ? catLabels : ['No Recommendations Yet'],
+                        datasets: [{
+                            data: catValues.length > 0 ? catValues : [1],
+                            backgroundColor: catValues.length > 0 ? [
+                                '#4361ee', '#10b981', '#f59e0b', '#7209b7', '#4cc9f0', '#ef4444', '#64748b'
+                            ] : [isDark ? '#374151' : '#e2e8f0'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: { 
+                                position: 'bottom', 
+                                labels: { 
+                                    boxWidth: 12, 
+                                    font: { size: 11 },
+                                    color: chartTextColor
+                                } 
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+        // Add Student AJAX Handler
+        document.getElementById('createStudentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitStudent');
+            const alertBox = document.getElementById('createStudentAlert');
+            const email = document.getElementById('studentEmail').value.trim();
+            const username = document.getElementById('studentUsername').value.trim();
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+            alertBox.innerHTML = '';
 
             fetch('/api/admin/create-student', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: email, username: username })
             })
-            .then(r => r.json())
+            .then(res => res.json())
             .then(data => {
-                if(data.success) { alert('Employee added successfully!'); window.location.reload(); }
-                else { alert(data.error || 'Error adding employee'); }
+                if (data.success) {
+                    alertBox.innerHTML = '<div class="alert alert-success py-2 small"><i class="bi bi-check-circle me-1"></i> Student created! Refreshing...</div>';
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    alertBox.innerHTML = `<div class="alert alert-danger py-2 small">${data.error || 'Failed to create student'}</div>`;
+                    btn.disabled = false;
+                    btn.innerHTML = 'Create Student';
+                }
             })
-            .catch(e => console.error(e));
-        }
-        
-        // Function to save career
-        function saveCareer() {
-            console.log('Saving career...');
-            // Implementation for saving career
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addCareerModal'));
-            modal.hide();
-        }
+            .catch(err => {
+                alertBox.innerHTML = '<div class="alert alert-danger py-2 small">Network connection error</div>';
+                btn.disabled = false;
+                btn.innerHTML = 'Create Student';
+            });
+        });
 
-        // Function to delete user (Admin)
-        function deleteUser(userId, username) {
-            if(confirm(`Are you sure you want to delete user "${username}"? This will remove all their data permanently.`)) {
+        // Delete Student Handler with bilingual support
+        function confirmDeleteUser(userId, username) {
+            const lang = window.getCurrentLang ? window.getCurrentLang() : 'en';
+            const dict = (window.translations && window.translations[lang]) ? window.translations[lang] : {};
+            const confirmMsg = `${dict.confirm_delete_student || 'Are you sure you want to delete student'} "${username}"? ${dict.delete_warning || 'All associated activities and assessment results will be removed.'}`;
+            
+            if (confirm(confirmMsg)) {
                 fetch(`/api/users/${userId}`, {
-                    method: 'DELETE',
-                    headers: {'Content-Type': 'application/json'}
+                    method: 'DELETE'
                 })
-                .then(r => r.json())
+                .then(res => res.json())
                 .then(data => {
-                    if(data.success) {
-                        window.location.reload();
+                    if (data.success) {
+                        const row = document.getElementById(`userRow-${userId}`);
+                        if (row) {
+                            row.style.opacity = '0';
+                            setTimeout(() => row.remove(), 300);
+                        }
                     } else {
-                        alert(data.error || 'Error deleting user');
+                        alert(data.error || 'Failed to delete user');
                     }
                 })
-                .catch(err => console.error(err));
-            }
-        }
-
-        // Function to save profile
-        function saveProfile() {
-            const email = document.getElementById('profileEmail').value;
-            const password = document.getElementById('profilePassword').value;
-            const fileInput = document.getElementById('profileImage');
-            
-            const formData = new FormData();
-            formData.append('email', email);
-            formData.append('password', password);
-            
-            if (fileInput.files.length > 0) {
-                formData.append('profile_image', fileInput.files[0]);
-            }
-
-            fetch('/api/profile', {
-                method: 'POST',
-                body: formData
-            })
-            .then(r => {
-                if (!r.ok) throw new Error('Network response was not ok');
-                return r.json();
-            })
-            .then(data => {
-                if(data.success) {
-                    alert('Profile updated successfully');
-                    window.location.reload();
-                } else {
-                    alert(data.error || 'Error updating profile');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while updating the profile.');
-            });
-        }
-
-        function previewImage(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('profilePreview').src = e.target.result;
-                }
-                reader.readAsDataURL(input.files[0]);
+                .catch(err => alert('Network error while deleting user'));
             }
         }
     </script>

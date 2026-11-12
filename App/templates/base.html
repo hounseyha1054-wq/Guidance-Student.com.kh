@@ -6,11 +6,36 @@
   <title>{% block title %}Career Guidance{% endblock %}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg border-bottom portal-navbar">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">Career Guidance</a>
+    <a class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2" href="#">
+      <i class="bi bi-compass-fill"></i> <span data-i18n="brand_name">CareerCompass</span>
+    </a>
+    <div class="d-flex align-items-center gap-2 ms-auto me-3">
+      <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+        <i class="bi bi-moon-stars-fill text-primary"></i>
+      </button>
+      <div class="dropdown">
+        <button class="lang-selector-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <span class="lang-btn-text">🇺🇸 EN</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow border-0 py-2">
+          <li>
+            <button class="dropdown-item d-flex align-items-center gap-2" onclick="setLanguage('en')" data-lang-option="en">
+              <span>🇺🇸</span> English
+            </button>
+          </li>
+          <li>
+            <button class="dropdown-item d-flex align-items-center gap-2" onclick="setLanguage('kh')" data-lang-option="kh">
+              <span>🇰🇭</span> ភាសាខ្មែរ (Khmer)
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -18,16 +43,16 @@
       <ul class="navbar-nav ms-auto">
         {% if session.get('user_id') %}
         {% if session.get('is_admin') %}
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.dashboard') }}">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.dashboard') }}"><span data-i18n="nav_admin_view">Dashboard</span></a></li>
         {% endif %}
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.assessment') }}">Assessment</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.assessment') }}"><span data-i18n="nav_assessment">Assessment</span></a></li>
         {% endif %}
         {% if session.get('is_admin') %}
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.admin_dashboard') }}">Admin</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.admin_dashboard') }}"><span data-i18n="admin_main_menu">Admin</span></a></li>
         {% endif %}
         {% if session.get('username') %}
         <li class="nav-item"><a class="nav-link" href="#">{{ session.username }}</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a></li>
+        <li class="nav-item"><a class="nav-link text-danger" href="{{ url_for('auth.logout') }}"><span data-i18n="nav_logout">Logout</span></a></li>
         {% else %}
         <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Login</a></li>
         {% endif %}
@@ -46,5 +71,6 @@
   {% block content %}{% endblock %}
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/theme-lang.js') }}"></script>
 </body>
 </html>

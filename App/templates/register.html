@@ -6,6 +6,7 @@
     <title>Register - Employee Care</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
     <style>
         :root {
             --primary-color: #4361ee;
@@ -417,6 +418,28 @@
                 </div>
             </div>
             <div class="register-right">
+                <div class="d-flex justify-content-end align-items-center gap-2 mb-3">
+                    <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                        <i class="bi bi-moon-stars-fill text-primary"></i>
+                    </button>
+                    <div class="dropdown">
+                        <button class="lang-selector-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="lang-btn-text">🇺🇸 EN</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 py-2">
+                            <li>
+                                <button class="dropdown-item d-flex align-items-center gap-2" onclick="setLanguage('en')" data-lang-option="en">
+                                    <span>🇺🇸</span> English
+                                </button>
+                            </li>
+                            <li>
+                                <button class="dropdown-item d-flex align-items-center gap-2" onclick="setLanguage('kh')" data-lang-option="kh">
+                                    <span>🇰🇭</span> ភាសាខ្មែរ (Khmer)
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
                 <h2>Create Account</h2>
                 <p>Fill in your information to get started</p>
                 
@@ -625,5 +648,6 @@
             }, 10000);
         });
     </script>
+    <script src="{{ url_for('static', filename='js/theme-lang.js') }}"></script>
 </body>
 </html>

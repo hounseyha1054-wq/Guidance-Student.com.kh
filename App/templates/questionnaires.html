@@ -6,37 +6,78 @@
     <title>Questionnaires - Student Career Guidance</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
         body { background: #f6f9fc; }
-        .question-item { padding: 15px; border-left: 3px solid #6f42c1; margin-bottom: 10px; background: white; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .source-badge { font-size: 0.8em; padding: 2px 6px; border-radius: 4px; }
+        .question-item { padding: 18px 20px; border-left: 4px solid #4361ee; margin-bottom: 12px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: all 0.2s ease; }
+        .question-item:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.09); }
+        .source-badge { font-size: 0.78rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
         .source-fact { background-color: #e7f1ff; color: #0d6efd; }
         .source-rule { background-color: #d1e7dd; color: #0f5132; }
     </style>
 </head>
 <body>
-    <div class="container mt-5">
+    <!-- Top Portal Navigation -->
+    <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-2 shadow-sm mb-4 portal-navbar">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('auth.dashboard') }}" class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2">
+                <i class="bi bi-compass-fill fs-4"></i> <span data-i18n="brand_name">CareerCompass</span>
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <!-- Theme Toggle Button -->
+                <button type="button" class="theme-toggle-btn me-1" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                    <i class="bi bi-moon-stars-fill text-primary"></i>
+                </button>
+
+                <!-- Language Selector Dropdown -->
+                <div class="dropdown me-2">
+                    <button class="lang-selector-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="lang-btn-text">🇺🇸 EN</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 py-2">
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" onclick="setLanguage('en')" data-lang-option="en">
+                                <span>🇺🇸</span> English
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item d-flex align-items-center gap-2" onclick="setLanguage('kh')" data-lang-option="kh">
+                                <span>🇰🇭</span> ភាសាខ្មែរ (Khmer)
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <a href="{{ url_for('auth.dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i> <span data-i18n="btn_back_dashboard">Back to Dashboard</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-2 mb-5">
         <div class="row justify-content-center">
             <div class="col-lg-10">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h3 class="mb-0"><i class="bi bi-clipboard-check"></i> Assessment Questionnaires</h3>
-                        <a href="{{ url_for('auth.dashboard') }}" class="btn btn-sm btn-light">Back to Dashboard</a>
+                <div class="card shadow-sm border-0 rounded-4 overflow-hidden portal-card">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3 px-4">
+                        <h4 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                            <i class="bi bi-clipboard-check"></i> <span data-i18n="questionnaires_title">Assessment Questionnaires</span>
+                        </h4>
                     </div>
-                    <div class="card-body">
-                        <p class="text-muted">These questions are dynamically generated from the Facts and Rules in the Knowledge Base.</p>
+                    <div class="card-body p-4">
+                        <p class="text-muted mb-4" data-i18n="questionnaires_desc">These questions are dynamically generated from the Facts and Rules in the Knowledge Base.</p>
                         
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5>All Questions</h5>
-                            <button class="btn btn-outline-primary btn-sm" onclick="loadQuestions()">
-                                <i class="bi bi-arrow-clockwise"></i> Refresh
+                            <h5 class="fw-bold mb-0" data-i18n="all_questions">All Questions</h5>
+                            <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="loadQuestions()">
+                                <i class="bi bi-arrow-clockwise me-1"></i> <span data-i18n="btn_refresh">Refresh</span>
                             </button>
                         </div>
 
                         <div id="loadingSpinner" class="text-center py-4">
                             <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                                <span class="visually-hidden" data-i18n="loading">Loading...</span>
                             </div>
                         </div>
 
@@ -47,12 +88,16 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/theme-lang.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', loadQuestions);
 
         function loadQuestions() {
             const container = document.getElementById('questionsList');
             const spinner = document.getElementById('loadingSpinner');
+            const lang = window.getCurrentLang ? window.getCurrentLang() : 'en';
+            const dict = (window.translations && window.translations[lang]) ? window.translations[lang] : {};
             
             spinner.style.display = 'block';
             container.innerHTML = '';
@@ -63,7 +108,8 @@
                     spinner.style.display = 'none';
                     
                     if (!data || data.length === 0) {
-                        container.innerHTML = '<div class="alert alert-info">No questions available. Add Facts or Rules to generate questions.</div>';
+                        const noMsg = dict.no_questions || 'No questions available. Add Facts or Rules to generate questions.';
+                        container.innerHTML = `<div class="alert alert-info rounded-3">${noMsg}</div>`;
                         return;
                     }
 
@@ -75,20 +121,22 @@
                         let sourceText = '';
                         
                         if (q.fact) {
-                            sourceBadge = '<span class="source-badge source-fact">Derived from Fact</span>';
-                            sourceText = `<div class="text-muted small mt-1"><i class="bi bi-lightbulb"></i> Fact: ${q.fact}</div>`;
+                            const badgeTxt = dict.derived_fact || 'Derived from Fact';
+                            sourceBadge = `<span class="source-badge source-fact"><i class="bi bi-lightbulb me-1"></i>${badgeTxt}</span>`;
+                            sourceText = `<div class="text-muted small mt-2"><i class="bi bi-info-circle me-1"></i><strong>Fact:</strong> ${q.fact}</div>`;
                         } else if (q.rule) {
-                            sourceBadge = '<span class="source-badge source-rule">Derived from Rule</span>';
-                            sourceText = `<div class="text-muted small mt-1"><i class="bi bi-diagram-3"></i> Rule: ${q.rule}</div>`;
+                            const badgeTxt = dict.derived_rule || 'Derived from Rule';
+                            sourceBadge = `<span class="source-badge source-rule"><i class="bi bi-diagram-3 me-1"></i>${badgeTxt}</span>`;
+                            sourceText = `<div class="text-muted small mt-2"><i class="bi bi-info-circle me-1"></i><strong>Rule:</strong> ${q.rule}</div>`;
                         }
 
                         div.innerHTML = `
-                            <div class="d-flex justify-content-between">
-                                <h5 class="mb-1">Q${index + 1}: ${q.question}</h5>
+                            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                <h6 class="mb-0 fw-bold">Q${index + 1}: ${q.question}</h6>
                                 ${sourceBadge}
                             </div>
-                            <div class="mb-2">
-                                <span class="badge bg-secondary">${q.category || 'General'}</span>
+                            <div class="mb-1">
+                                <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2 py-1">${q.category || 'General'}</span>
                             </div>
                             ${sourceText}
                         `;
@@ -97,11 +145,11 @@
                 })
                 .catch(err => {
                     spinner.style.display = 'none';
-                    container.innerHTML = '<div class="alert alert-danger">Error loading questions.</div>';
+                    const errMsg = dict.error_loading || 'Error loading questions.';
+                    container.innerHTML = `<div class="alert alert-danger rounded-3">${errMsg}</div>`;
                     console.error(err);
                 });
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

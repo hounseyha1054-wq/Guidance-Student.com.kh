@@ -10,7 +10,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128))
+    password_hash = db.Column(db.String(255))
     is_admin = db.Column(db.Boolean, default=False)
     profile_image = db.Column(db.String(255), nullable=True)
     first_name = db.Column(db.String(80), nullable=True)
@@ -38,6 +38,7 @@ class User(db.Model):
             'first_name': self.first_name,
             'last_name': self.last_name,
             'phone': self.phone,
+            'is_admin': self.is_admin,
             'recommended_career': self.recommended_career,
             'secondary_career': self.secondary_career,
             'confidence_score': self.confidence_score,

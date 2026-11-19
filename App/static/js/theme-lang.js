@@ -473,6 +473,285 @@
     };
 
     // ==========================================
+    // DYNAMIC QUESTION & DOMAIN TRANSLATIONS
+    // ==========================================
+    const questionTranslations = {
+        "Do you enjoy writing or reading code?": {
+            en: "Do you enjoy writing or reading code?",
+            kh: "តើអ្នកចូលចិត្តសរសេរ ឬអានកូដកុំព្យូទ័រដែរឬទេ?"
+        },
+        "Do you enjoy solving logical or mathematical problems?": {
+            en: "Do you enjoy solving logical or mathematical problems?",
+            kh: "តើអ្នកចូលចិត្តដោះស្រាយបញ្ហាឡូជីខល ឬបញ្ហាគណិតវិទ្យាដែរឬទេ?"
+        },
+        "Are you interested in building websites or mobile apps?": {
+            en: "Are you interested in building websites or mobile apps?",
+            kh: "តើអ្នកចាប់អារម្មណ៍លើការបង្កើតគេហទំព័រ ឬកម្មវិធីទូរស័ព្ទដែរឬទេ?"
+        },
+        "Are you comfortable working with computers for long hours?": {
+            en: "Are you comfortable working with computers for long hours?",
+            kh: "តើអ្នកមានអារម្មណ៍ស្រួលក្នុងការធ្វើការជាមួយកុំព្យូទ័ររយៈពេលយូរដែរឬទេ?"
+        },
+        "Do you enjoy learning about new software and tools?": {
+            en: "Do you enjoy learning about new software and tools?",
+            kh: "តើអ្នកចូលចិត្តស្វែងយល់ និងរៀនអំពីកម្មវិធី ឬឧបករណ៍បច្ចេកវិទ្យាថ្មីៗដែរឬទេ?"
+        },
+        "Are you interested in analyzing data using computers?": {
+            en: "Are you interested in analyzing data using computers?",
+            kh: "តើអ្នកចាប់អារម្មណ៍លើការវិភាគទិន្នន័យដោយប្រើកុំព្យូទ័រដែរឬទេ?"
+        },
+        "Do you enjoy finding and fixing errors in software?": {
+            en: "Do you enjoy finding and fixing errors in software?",
+            kh: "តើអ្នកចូលចិត្តស្វែងរក និងជួសជុលកំហុស (Bugs) នៅក្នុងកម្មវិធីដែរឬទេ?"
+        },
+        "Are you interested in protecting systems from hackers?": {
+            en: "Are you interested in protecting systems from hackers?",
+            kh: "តើអ្នកចាប់អារម្មណ៍លើការការពារប្រព័ន្ធកុំព្យូទ័រពីក្រុមហេគឃ័រ (Hackers) ដែរឬទេ?"
+        },
+        "Do you enjoy managing or organizing people and tasks?": {
+            en: "Do you enjoy managing or organizing people and tasks?",
+            kh: "តើអ្នកចូលចិត្តគ្រប់គ្រង ឬចាត់ចែងមនុស្ស និងការងារដែរឬទេ?"
+        },
+        "Are you interested in marketing or selling products?": {
+            en: "Are you interested in marketing or selling products?",
+            kh: "តើអ្នកចាប់អារម្មណ៍លើការធ្វើទីផ្សារ ឬការលក់ផលិតផលដែរឬទេ?"
+        },
+        "Do you enjoy analyzing data to make business decisions?": {
+            en: "Do you enjoy analyzing data to make business decisions?",
+            kh: "តើអ្នកចូលចិត្តវិភាគទិន្នន័យដើម្បីធ្វើការសម្រេចចិត្តក្នុងអាជីវកម្មដែរឬទេ?"
+        },
+        "Are you comfortable presenting ideas to a group?": {
+            en: "Are you comfortable presenting ideas to a group?",
+            kh: "តើអ្នកមានទំនុកចិត្តក្នុងការធ្វើបទបង្ហាញ និងចែករំលែកគំនិតទៅកាន់ក្រុមមនុស្សដែរឬទេ?"
+        },
+        "Do you enjoy planning and leading projects?": {
+            en: "Do you enjoy planning and leading projects?",
+            kh: "តើអ្នកចូលចិត្តរៀបចំផែនការ និងដឹកនាំគម្រោងការងារដែរឬទេ?"
+        },
+        "Are you interested in understanding customer behavior?": {
+            en: "Are you interested in understanding customer behavior?",
+            kh: "តើអ្នកចាប់អារម្មណ៍លើការស្វែងយល់ពីឥរិយាបថ និងតម្រូវការរបស់អតិថិជនដែរឬទេ?"
+        },
+        "Do you enjoy negotiating or convincing others?": {
+            en: "Do you enjoy negotiating or convincing others?",
+            kh: "តើអ្នកចូលចិត្តការចរចា ឬការបញ្ចុះបញ្ចូលអ្នកដទៃដែរឬទេ?"
+        },
+        "Do you enjoy designing graphics or visual content?": {
+            en: "Do you enjoy designing graphics or visual content?",
+            kh: "តើអ្នកចូលចិត្តការរចនាក្រាហ្វិក ឬមាតិការូបភាពដែរឬទេ?"
+        },
+        "Are you interested in photography or video production?": {
+            en: "Are you interested in photography or video production?",
+            kh: "តើអ្នកចាប់អារម្មណ៍លើការថតរូប ឬការផលិតវីដេអូដែរឬទេ?"
+        },
+        "Do you enjoy writing articles, stories, or content?": {
+            en: "Do you enjoy writing articles, stories, or content?",
+            kh: "តើអ្នកចូលចិត្តសរសេរអត្ថបទ រឿងរ៉ាវ ឬបង្កើតមាតិកា (Content) ដែរឬទេ?"
+        },
+        "Do you enjoy creating posters, logos, or layouts?": {
+            en: "Do you enjoy creating posters, logos, or layouts?",
+            kh: "តើអ្នកចូលចិត្តរចនាផ្ទាំងរូបភាព (Poster) ឡូហ្គោ ឬប្លង់រចនាដែរឬទេ?"
+        },
+        "Are you interested in editing photos or videos?": {
+            en: "Are you interested in editing photos or videos?",
+            kh: "តើអ្នកចាប់អារម្មណ៍លើការកាត់តរូបថត ឬវីដេអូដែរឬទេ?"
+        },
+        "Do you enjoy coming up with new and original ideas?": {
+            en: "Do you enjoy coming up with new and original ideas?",
+            kh: "តើអ្នកចូលចិត្តបង្កើតគំនិតថ្មីៗ និងប្លែកៗដោយខ្លួនឯងដែរឬទេ?"
+        },
+        "Are you interested in biology, chemistry, or physics?": {
+            en: "Are you interested in biology, chemistry, or physics?",
+            kh: "តើអ្នកចាប់អារម្មណ៍លើមុខវិជ្ជាជីវវិទ្យា គីមីវិទ្យា ឬរូបវិទ្យាដែរឬទេ?"
+        },
+        "Do you enjoy conducting experiments or research?": {
+            en: "Do you enjoy conducting experiments or research?",
+            kh: "តើអ្នកចូលចិត្តធ្វើការពិសោធន៍ ឬការស្រាវជ្រាវបែបវិទ្យាសាស្ត្រដែរឬទេ?"
+        },
+        "Are you interested in working in a hospital or clinic?": {
+            en: "Are you interested in working in a hospital or clinic?",
+            kh: "តើអ្នកចាប់អារម្មណ៍លើការធ្វើការនៅក្នុងមន្ទីរពេទ្យ ឬគ្លីនិកដែរឬទេ?"
+        },
+        "Do you enjoy studying how the human body works?": {
+            en: "Do you enjoy studying how the human body works?",
+            kh: "តើអ្នកចូលចិត្តសិក្សាអំពីដំណើរការនៃរាងកាយមនុស្សដែរឬទេ?"
+        },
+        "Are you interested in helping sick people recover?": {
+            en: "Are you interested in helping sick people recover?",
+            kh: "តើអ្នកចាប់អារម្មណ៍លើការព្យាបាល និងជួយអ្នកជំងឺឱ្យជាសះស្បើយដែរឬទេ?"
+        },
+        "Do you enjoy reading scientific journals or articles?": {
+            en: "Do you enjoy reading scientific journals or articles?",
+            kh: "តើអ្នកចូលចិត្តអានទស្សនាវដ្ដី ឬអត្ថបទស្រាវជ្រាវវិទ្យាសាស្ត្រដែរឬទេ?"
+        }
+    };
+
+    const categoryMap = {
+        "technology": { en: "Technology", kh: "បច្ចេកវិទ្យា (Technology)" },
+        "business": { en: "Business", kh: "ពាណិជ្ជកម្ម (Business)" },
+        "creative": { en: "Creative", kh: "ការច្នៃប្រឌិត (Creative)" },
+        "science": { en: "Science", kh: "វិទ្យាសាស្ត្រ (Science)" },
+        "general": { en: "General", kh: "ទូទៅ (General)" }
+    };
+
+    const careerMap = {
+        "software developer": { en: "Software Developer", kh: "អ្នកអភិវឌ្ឍន៍សូហ្វវែរ (Software Developer)" },
+        "web developer": { en: "Web Developer", kh: "អ្នកអភិវឌ្ឍន៍គេហទំព័រ (Web Developer)" },
+        "web developers": { en: "Web Developer", kh: "អ្នកអភិវឌ្ឍន៍គេហទំព័រ (Web Developer)" },
+        "data analyst": { en: "Data Analyst", kh: "អ្នកវិភាគទិន្នន័យ (Data Analyst)" },
+        "cybersecurity analyst": { en: "Cybersecurity Analyst", kh: "អ្នកវិភាគសន្តិសុខប្រព័ន្ធព័ត៌មានវិទ្យា (Cybersecurity Analyst)" },
+        "marketing manager": { en: "Marketing Manager", kh: "អ្នកគ្រប់គ្រងផ្នែកទីផ្សារ (Marketing Manager)" },
+        "business analyst": { en: "Business Analyst", kh: "អ្នកវិភាគអាជីវកម្ម (Business Analyst)" },
+        "project manager": { en: "Project Manager", kh: "អ្នកគ្រប់គ្រងគម្រោង (Project Manager)" },
+        "sales manager": { en: "Sales Manager", kh: "អ្នកគ្រប់គ្រងផ្នែកលក់ (Sales Manager)" },
+        "graphic designer": { en: "Graphic Designer", kh: "អ្នករចនាក្រាហ្វិក (Graphic Designer)" },
+        "content writer": { en: "Content Writer", kh: "អ្នកសរសេរមាតិកា (Content Writer)" },
+        "video producer": { en: "Video Producer", kh: "អ្នកផលិតវីដេអូ (Video Producer)" },
+        "doctor": { en: "Doctor / Physician", kh: "វេជ្ជបណ្ឌិត / គ្រូពេទ្យ (Doctor)" },
+        "doctor / physician": { en: "Doctor / Physician", kh: "វេជ្ជបណ្ឌិត / គ្រូពេទ្យ (Doctor / Physician)" },
+        "doctor/physician": { en: "Doctor / Physician", kh: "វេជ្ជបណ្ឌិត / គ្រូពេទ្យ (Doctor / Physician)" },
+        "research scientist": { en: "Research Scientist", kh: "អ្នកវិទ្យាសាស្ត្រស្រាវជ្រាវ (Research Scientist)" },
+        "nurse": { en: "Nurse", kh: "គិលានុបដ្ឋាយិកា / គិលានុបដ្ឋាក (Nurse)" },
+        "general": { en: "General Career Track", kh: "មាគ៌ាអាជីពទូទៅ (General Career Track)" },
+        "none": { en: "None", kh: "គ្មាន (None)" }
+    };
+
+    const ruleTranslations = {
+        "If user answers YES to coding, logical problems, and building apps → Recommend Software Developer": {
+            en: "If user answers YES to coding, logical problems, and building apps → Recommend Software Developer",
+            kh: "ប្រសិនបើអ្នកឆ្លើយថា យល់ស្រប ចំពោះការសរសេរកូដ ដោះស្រាយបញ្ហាឡូជីខល និងការបង្កើតកម្មវិធី → ណែនាំអ្នកអភិវឌ្ឍន៍សូហ្វវែរ (Software Developer)"
+        },
+        "If user answers YES to building websites, coding, and learning new tools → Recommend Web Developer": {
+            en: "If user answers YES to building websites, coding, and learning new tools → Recommend Web Developer",
+            kh: "ប្រសិនបើអ្នកឆ្លើយថា យល់ស្រប ចំពោះការបង្កើតគេហទំព័រ ការសរសេរកូដ និងការរៀនឧបករណ៍ថ្មីៗ → ណែនាំអ្នកអភិវឌ្ឍន៍គេហទំព័រ (Web Developer)"
+        },
+        "If user answers YES to analyzing data, mathematical problems, and working with computers → Recommend Data Analyst": {
+            en: "If user answers YES to analyzing data, mathematical problems, and working with computers → Recommend Data Analyst",
+            kh: "ប្រសិនបើអ្នកឆ្លើយថា យល់ស្រប ចំពោះការវិភាគទិន្នន័យ បញ្ហាគណិតវិទ្យា និងការធ្វើការជាមួយកុំព្យូទ័រ → ណែនាំអ្នកវិភាគទិន្នន័យ (Data Analyst)"
+        },
+        "If user answers YES to computers, logical problems, and software tools → Recommend Cybersecurity Analyst": {
+            en: "If user answers YES to computers, logical problems, and software tools → Recommend Cybersecurity Analyst",
+            kh: "ប្រសិនបើអ្នកឆ្លើយថា យល់ស្រប ចំពោះការប្រើប្រាស់កុំព្យូទ័រ បញ្ហាឡូជីខល និងឧបករណ៍សូហ្វវែរ → ណែនាំអ្នកវិភាគសន្តិសុខព័ត៌មានវិទ្យា (Cybersecurity Analyst)"
+        },
+        "If user answers YES to marketing, presenting ideas, and organizing tasks → Recommend Marketing Manager": {
+            en: "If user answers YES to marketing, presenting ideas, and organizing tasks → Recommend Marketing Manager",
+            kh: "ប្រសិនបើអ្នកឆ្លើយថា យល់ស្រប ចំពោះទីផ្សារ ការធ្វើបទបង្ហាញគំនិត និងការរៀបចំការងារ → ណែនាំអ្នកគ្រប់គ្រងផ្នែកទីផ្សារ (Marketing Manager)"
+        },
+        "If user answers YES to analyzing data, managing tasks, and presenting ideas → Recommend Business Analyst": {
+            en: "If user answers YES to analyzing data, managing tasks, and presenting ideas → Recommend Business Analyst",
+            kh: "ប្រសិនបើអ្នកឆ្លើយថា យល់ស្រប ចំពោះការវិភាគទិន្នន័យ ការគ្រប់គ្រងការងារ និងការធ្វើបទបង្ហាញ → ណែនាំអ្នកវិភាគអាជីវកម្ម (Business Analyst)"
+        },
+        "If user answers YES to managing people, organizing tasks, and presenting ideas → Recommend Project Manager": {
+            en: "If user answers YES to managing people, organizing tasks, and presenting ideas → Recommend Project Manager",
+            kh: "ប្រសិនបើអ្នកឆ្លើយថា យល់ស្រប ចំពោះការគ្រប់គ្រងមនុស្ស ការរៀបចំការងារ និងការធ្វើបទបង្ហាញ → ណែនាំអ្នកគ្រប់គ្រងគម្រោង (Project Manager)"
+        },
+        "If user answers YES to selling products, presenting ideas, and managing people → Recommend Sales Manager": {
+            en: "If user answers YES to selling products, presenting ideas, and managing people → Recommend Sales Manager",
+            kh: "ប្រសិនបើអ្នកឆ្លើយថា យល់ស្រប ចំពោះការលក់ផលិតផល ការធ្វើបទបង្ហាញ និងការគ្រប់គ្រងមនុស្ស → ណែនាំអ្នកគ្រប់គ្រងផ្នែកលក់ (Sales Manager)"
+        },
+        "If user answers YES to designing graphics, visual content, and creative tools → Recommend Graphic Designer": {
+            en: "If user answers YES to designing graphics, visual content, and creative tools → Recommend Graphic Designer",
+            kh: "ប្រសិនបើអ្នកឆ្លើយថា យល់ស្រប ចំពោះការរចនាក្រាហ្វិក មាតិការូបភាព និងឧបករណ៍ច្នៃប្រឌិត → ណែនាំអ្នករចនាក្រាហ្វិក (Graphic Designer)"
+        },
+        "If user answers YES to writing articles, creative content, and presenting ideas → Recommend Content Writer": {
+            en: "If user answers YES to writing articles, creative content, and presenting ideas → Recommend Content Writer",
+            kh: "ប្រសិនបើអ្នកឆ្លើយថា យល់ស្រប ចំពោះការសរសេរអត្ថបទ មាតិកាច្នៃប្រឌិត និងការធ្វើបទបង្ហាញ → ណែនាំអ្នកសរសេរមាតិកា (Content Writer)"
+        },
+        "If user answers YES to photography, video production, and visual content → Recommend Video Producer": {
+            en: "If user answers YES to photography, video production, and visual content → Recommend Video Producer",
+            kh: "ប្រសិនបើអ្នកឆ្លើយថា យល់ស្រប ចំពោះការថតរូប ការផលិតវីដេអូ និងមាតិការូបភាព → ណែនាំអ្នកផលិតវីដេអូ (Video Producer)"
+        },
+        "If user answers YES to biology, hospital work, and research → Recommend Doctor": {
+            en: "If user answers YES to biology, hospital work, and research → Recommend Doctor",
+            kh: "ប្រសិនបើអ្នកឆ្លើយថា យល់ស្រប ចំពោះជីវវិទ្យា ការងារមន្ទីរពេទ្យ និងការស្រាវជ្រាវ → ណែនាំវេជ្ជបណ្ឌិត (Doctor)"
+        },
+        "If user answers YES to experiments, research, and chemistry or physics → Recommend Research Scientist": {
+            en: "If user answers YES to experiments, research, and chemistry or physics → Recommend Research Scientist",
+            kh: "ប្រសិនបើអ្នកឆ្លើយថា យល់ស្រប ចំពោះការពិសោធន៍ ការស្រាវជ្រាវ និងគីមីវិទ្យា ឬរូបវិទ្យា → ណែនាំអ្នកវិទ្យាសាស្ត្រស្រាវជ្រាវ (Research Scientist)"
+        },
+        "If user answers YES to hospital work, biology, and helping people → Recommend Nurse": {
+            en: "If user answers YES to hospital work, biology, and helping people → Recommend Nurse",
+            kh: "ប្រសិនបើអ្នកឆ្លើយថា យល់ស្រប ចំពោះការងារមន្ទីរពេទ្យ ជីវវិទ្យា និងការជួយមនុស្ស → ណែនាំគិលានុបដ្ឋាយិកា (Nurse)"
+        }
+    };
+
+    function normalizeKey(str) {
+        if (!str) return '';
+        return str.toString()
+            .trim()
+            .toLowerCase()
+            .replace(/[?.,!]/g, '')
+            .replace(/\s+/g, ' ');
+    }
+
+    // Build normalized lookup maps
+    const normalizedQuestionMap = {};
+    Object.keys(questionTranslations).forEach(origKey => {
+        const item = questionTranslations[origKey];
+        const enNorm = normalizeKey(item.en || origKey);
+        const khNorm = normalizeKey(item.kh);
+        const entry = { en: item.en || origKey, kh: item.kh };
+        if (enNorm) normalizedQuestionMap[enNorm] = entry;
+        if (khNorm) normalizedQuestionMap[khNorm] = entry;
+    });
+
+    const normalizedRuleMap = {};
+    Object.keys(ruleTranslations).forEach(origKey => {
+        const item = ruleTranslations[origKey];
+        const enNorm = normalizeKey(item.en || origKey);
+        const khNorm = normalizeKey(item.kh);
+        const entry = { en: item.en || origKey, kh: item.kh };
+        if (enNorm) normalizedRuleMap[enNorm] = entry;
+        if (khNorm) normalizedRuleMap[khNorm] = entry;
+    });
+
+    function translateQuestion(text, lang) {
+        if (!text) return '';
+        const targetLang = (lang === 'kh' || lang === 'km') ? 'kh' : 'en';
+        const norm = normalizeKey(text);
+        if (normalizedQuestionMap[norm]) {
+            return normalizedQuestionMap[norm][targetLang] || text;
+        }
+        if (questionTranslations[text] && questionTranslations[text][targetLang]) {
+            return questionTranslations[text][targetLang];
+        }
+        return text;
+    }
+
+    function translateCategory(cat, lang) {
+        if (!cat) return '';
+        const targetLang = (lang === 'kh' || lang === 'km') ? 'kh' : 'en';
+        const norm = normalizeKey(cat);
+        if (categoryMap[norm]) {
+            return categoryMap[norm][targetLang] || cat;
+        }
+        return cat;
+    }
+
+    function translateCareer(career, lang) {
+        if (!career) return '';
+        const targetLang = (lang === 'kh' || lang === 'km') ? 'kh' : 'en';
+        const norm = normalizeKey(career);
+        if (careerMap[norm]) {
+            return careerMap[norm][targetLang] || career;
+        }
+        return career;
+    }
+
+    function translateRule(rule, lang) {
+        if (!rule) return '';
+        const targetLang = (lang === 'kh' || lang === 'km') ? 'kh' : 'en';
+        const norm = normalizeKey(rule);
+        if (normalizedRuleMap[norm]) {
+            return normalizedRuleMap[norm][targetLang] || rule;
+        }
+        if (ruleTranslations[rule] && ruleTranslations[rule][targetLang]) {
+            return ruleTranslations[rule][targetLang];
+        }
+        return rule;
+    }
+
+    // ==========================================
     // THEME MANAGEMENT (Dark / Light)
     // ==========================================
     function getPreferredTheme() {
@@ -538,6 +817,24 @@
             }
         });
 
+        // Translate dynamic category attributes
+        document.querySelectorAll('[data-i18n-category]').forEach(el => {
+            const cat = el.getAttribute('data-i18n-category');
+            el.textContent = translateCategory(cat, lang);
+        });
+
+        // Translate dynamic career attributes
+        document.querySelectorAll('[data-i18n-career]').forEach(el => {
+            const car = el.getAttribute('data-i18n-career');
+            el.textContent = translateCareer(car, lang);
+        });
+
+        // Translate dynamic question attributes
+        document.querySelectorAll('[data-i18n-question]').forEach(el => {
+            const q = el.getAttribute('data-i18n-question');
+            el.textContent = translateQuestion(q, lang);
+        });
+
         // Update active state on language switcher buttons
         document.querySelectorAll('.lang-btn-text').forEach(el => {
             el.textContent = lang === 'kh' ? '🇰🇭 ភាសាខ្មែរ' : '🇺🇸 EN';
@@ -563,8 +860,17 @@
         window.setLanguage(next);
     };
 
+    // Public API Exports
     window.translations = translations;
     window.getCurrentLang = getPreferredLang;
+    window.translateQuestion = translateQuestion;
+    window.translateCategory = translateCategory;
+    window.translateCareer = translateCareer;
+    window.translateRule = translateRule;
+    window.questionTranslations = questionTranslations;
+    window.categoryTranslations = categoryMap;
+    window.careerTranslations = careerMap;
+    window.ruleTranslations = ruleTranslations;
 
     // Immediately run theme setup to prevent FOUC (flash of unstyled content)
     applyTheme(getPreferredTheme());

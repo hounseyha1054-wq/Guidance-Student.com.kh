@@ -160,10 +160,35 @@
         }
 
         .question-text {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
             color: var(--dark-text);
+            line-height: 1.6;
+        }
+
+        .question-subtext {
+            font-size: 0.92rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .category-badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.4rem 0.9rem;
+            border-radius: 30px;
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary-color);
+            border: 1px solid rgba(67, 97, 238, 0.2);
+            margin-bottom: 1rem;
+        }
+
+        .option-label {
+            font-size: 1.05rem;
         }
 
         .options-container {
@@ -503,9 +528,15 @@
     <!-- Top Portal Navigation -->
     <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-2 shadow-sm">
         <div class="container d-flex justify-content-between align-items-center">
+            {% if session.get('is_admin') %}
+            <a href="{{ url_for('auth.admin_dashboard') }}" class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2">
+                <i class="bi bi-compass-fill fs-4"></i> <span data-i18n="brand_name">CareerCompass</span>
+            </a>
+            {% else %}
             <a href="{{ url_for('auth.account') }}" class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2">
                 <i class="bi bi-compass-fill fs-4"></i> <span data-i18n="brand_name">CareerCompass</span>
             </a>
+            {% endif %}
             <div class="d-flex align-items-center gap-2">
                 <!-- Dark / Light Mode Switcher -->
                 <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
@@ -531,9 +562,15 @@
                     </ul>
                 </div>
 
+                {% if session.get('is_admin') %}
+                <a href="{{ url_for('auth.admin_dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i> <span data-i18n="btn_back_dashboard">Back to Dashboard</span>
+                </a>
+                {% else %}
                 <a href="{{ url_for('auth.account') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                     <i class="bi bi-arrow-left me-1"></i> <span data-i18n="btn_back_portal">Back to Portal</span>
                 </a>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -551,9 +588,15 @@
                 <div class="card assessment-card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h4 class="d-flex align-items-center gap-2 mb-0"><i class="bi bi-clipboard-check"></i><span data-i18n="assessment_title">Career Assessment</span></h4>
+                        {% if session.get('is_admin') %}
+                        <a href="{{ url_for('auth.admin_dashboard') }}" class="btn-back">
+                            <i class="bi bi-arrow-left me-1"></i> <span data-i18n="btn_exit">Exit</span>
+                        </a>
+                        {% else %}
                         <a href="{{ url_for('auth.account') }}" class="btn-back">
                             <i class="bi bi-arrow-left me-1"></i> <span data-i18n="btn_exit">Exit</span>
                         </a>
+                        {% endif %}
                     </div>
                     <div class="card-body">
                         <!-- Assessment Form -->
@@ -656,27 +699,23 @@
         let questions = [];
         let currentQuestionIndex = 0;
         let answers = {}; // Map question ID to answer (yes/no)
+        let currentResultData = null; // Store assessment score for live translation
 
         function getDict() {
             const lang = window.getCurrentLang ? window.getCurrentLang() : 'en';
             return (window.translations && window.translations[lang]) ? window.translations[lang] : {};
         }
 
-        // Listen for live language change
+        // Listen for live language change (Instant bilingual translation switch)
         window.addEventListener('languageChanged', function(e) {
             const dict = e.detail.dict || getDict();
-            if (document.getElementById('assessmentForm').style.display !== 'none' && questions.length > 0) {
+            const formVisible = document.getElementById('assessmentForm') && document.getElementById('assessmentForm').style.display !== 'none';
+            const resultVisible = document.getElementById('resultBox') && document.getElementById('resultBox').style.display !== 'none';
+
+            if (formVisible && questions.length > 0) {
                 renderQuestion(currentQuestionIndex);
-            } else if (document.getElementById('resultBox').style.display !== 'none') {
-                const primary = document.getElementById('primaryCareer').textContent;
-                const lang = window.getCurrentLang ? window.getCurrentLang() : 'en';
-                if (lang === 'kh') {
-                    document.getElementById('recommendationText').textContent = 
-                        `ផ្អែកលើចម្លើយរបស់អ្នក អ្នកមានទំនោរ និងសមត្ថភាពខ្ពស់ឆ្ពោះទៅកាន់ជំនាញ ${primary}។ វិស័យនេះត្រូវគ្នាយ៉ាងល្អឥតខ្ចោះជាមួយចំណង់ចំណូលចិត្តរបស់អ្នក។`;
-                } else {
-                    document.getElementById('recommendationText').textContent = 
-                        `Based on your responses, you show a strong inclination towards ${primary}. This field aligns well with your interests.`;
-                }
+            } else if (resultVisible && currentResultData) {
+                renderResultView();
             }
         });
 
@@ -725,29 +764,55 @@
             currentQuestionIndex = index;
             const q = questions[index];
             const dict = getDict();
+            const lang = window.getCurrentLang ? window.getCurrentLang() : 'en';
             
             // Update counters and progress
             document.getElementById('currentQuestion').textContent = index + 1;
-            const progress = ((index) / questions.length) * 100;
+            const progress = ((index + 1) / questions.length) * 100;
             document.getElementById('progressBar').style.width = `${progress}%`;
             document.getElementById('progressPercentage').textContent = `${Math.round(progress)}% ${dict.complete_percent || 'Complete'}`;
 
-            // Render Question with localized options
+            // Resolve localized texts
+            const mainQuestion = window.translateQuestion ? window.translateQuestion(q.question, lang) : (lang === 'kh' && q.question_kh ? q.question_kh : q.question);
+            const altLang = lang === 'kh' ? 'en' : 'kh';
+            const altQuestion = window.translateQuestion ? window.translateQuestion(q.question, altLang) : (lang === 'kh' ? (q.question_en || q.question) : (q.question_kh || ''));
+            const catName = window.translateCategory ? window.translateCategory(q.category, lang) : (lang === 'kh' && q.category_kh ? q.category_kh : q.category);
+
+            // Render Question with localized options and category badge
             const container = document.getElementById('questionsContainer');
             const savedAnswer = answers[q.id];
-            const agreeTxt = dict.option_agree || 'Yes, I agree';
-            const disagreeTxt = dict.option_disagree || 'No, I disagree';
+            const agreeTxt = dict.option_agree || (lang === 'kh' ? 'បាទ/ចាស ខ្ញុំយល់ស្រប' : 'Yes, I agree');
+            const disagreeTxt = dict.option_disagree || (lang === 'kh' ? 'ទេ ខ្ញុំមិនយល់ស្របទេ' : 'No, I disagree');
             
             container.innerHTML = `
-                <div class="question-text fade-in">${q.question}</div>
-                <div class="options-container fade-in">
+                <div class="mb-2">
+                    <span class="category-badge-pill">
+                        <i class="bi bi-tag-fill"></i>
+                        <span>${catName}</span>
+                    </span>
+                </div>
+                <div class="question-text fade-in ${lang === 'kh' ? 'font-khmer' : ''}">
+                    ${mainQuestion}
+                </div>
+                ${altQuestion && altQuestion !== mainQuestion ? `
+                <div class="question-subtext text-muted small d-flex align-items-center gap-1 opacity-75">
+                    <i class="bi bi-translate text-primary"></i>
+                    <span>${altQuestion}</span>
+                </div>` : ''}
+                <div class="options-container fade-in mt-3">
                     <div class="option-card ${savedAnswer === 'yes' ? 'selected' : ''}" onclick="selectOption('yes')">
                         <input type="radio" name="q${q.id}" value="yes" ${savedAnswer === 'yes' ? 'checked' : ''}>
-                        <label class="ms-2 mb-0 fw-semibold cursor-pointer">${agreeTxt}</label>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-check-circle-fill text-success fs-5 me-2"></i>
+                            <span class="option-label fw-semibold">${agreeTxt}</span>
+                        </div>
                     </div>
                     <div class="option-card ${savedAnswer === 'no' ? 'selected' : ''}" onclick="selectOption('no')">
                         <input type="radio" name="q${q.id}" value="no" ${savedAnswer === 'no' ? 'checked' : ''}>
-                        <label class="ms-2 mb-0 fw-semibold cursor-pointer">${disagreeTxt}</label>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-x-circle-fill text-danger fs-5 me-2"></i>
+                            <span class="option-label fw-semibold">${disagreeTxt}</span>
+                        </div>
                     </div>
                 </div>
             `;
@@ -808,7 +873,6 @@
         }
 
         function calculateAndShowResults() {
-            const dict = getDict();
             const scores = {};
             
             questions.forEach(q => {
@@ -828,31 +892,58 @@
             const totalYes = Object.values(scores).reduce((a, b) => a + b, 0);
             const confidence = questions.length > 0 ? Math.round((totalYes / questions.length) * 100) : 0;
 
-            // Update UI
+            // Cache data for live language re-translation
+            currentResultData = {
+                primary: primary,
+                secondary: secondary,
+                confidence: confidence,
+                sortedCats: sortedCats
+            };
+
+            // Switch view
             document.getElementById('assessmentForm').style.display = 'none';
             document.getElementById('resultBox').style.display = 'block';
-            
-            document.getElementById('primaryCareer').textContent = primary;
-            document.getElementById('secondaryCareer').textContent = secondary;
-            document.getElementById('confidence').textContent = `${confidence}%`;
-            
+
+            renderResultView();
+
             // Animate bar
             setTimeout(() => {
                 document.getElementById('confidenceFill').style.width = `${confidence}%`;
             }, 100);
 
-            // Recommendation text in current language
-            const lang = window.getCurrentLang ? window.getCurrentLang() : 'en';
-            if (lang === 'kh') {
-                document.getElementById('recommendationText').textContent = 
-                    `ផ្អែកលើចម្លើយរបស់អ្នក អ្នកមានទំនោរ និងសមត្ថភាពខ្ពស់ឆ្ពោះទៅកាន់ជំនាញ ${primary}។ វិស័យនេះត្រូវគ្នាយ៉ាងល្អឥតខ្ចោះជាមួយចំណង់ចំណូលចិត្តរបស់អ្នក។`;
-            } else {
-                document.getElementById('recommendationText').textContent = 
-                    `Based on your responses, you show a strong inclination towards ${primary}. This field aligns well with your interests.`;
-            }
-
             // Save to backend
             saveResultToBackend(primary, secondary, confidence);
+        }
+
+        function renderResultView() {
+            if (!currentResultData) return;
+            const lang = window.getCurrentLang ? window.getCurrentLang() : 'en';
+            const primaryDisplay = window.translateCareer ? window.translateCareer(currentResultData.primary, lang) : currentResultData.primary;
+            const secondaryDisplay = window.translateCareer ? window.translateCareer(currentResultData.secondary, lang) : currentResultData.secondary;
+
+            document.getElementById('primaryCareer').textContent = primaryDisplay;
+            document.getElementById('secondaryCareer').textContent = secondaryDisplay;
+            document.getElementById('confidence').textContent = `${currentResultData.confidence}%`;
+
+            // Recommendation text in current language
+            if (lang === 'kh') {
+                document.getElementById('recommendationText').textContent = 
+                    `ផ្អែកលើចម្លើយរបស់អ្នក អ្នកមានទំនោរ និងសមត្ថភាពខ្ពស់ឆ្ពោះទៅកាន់ជំនាញ ${primaryDisplay}។ វិស័យនេះត្រូវគ្នាយ៉ាងល្អឥតខ្ចោះជាមួយចំណង់ចំណូលចិត្ត និងសក្តានុពលរបស់អ្នក។`;
+            } else {
+                document.getElementById('recommendationText').textContent = 
+                    `Based on your responses, you show a strong inclination towards ${primaryDisplay}. This field aligns well with your interests and strengths.`;
+            }
+
+            // Render top interest areas
+            const selectedAreasContainer = document.getElementById('selectedAreas');
+            if (selectedAreasContainer && currentResultData.sortedCats) {
+                selectedAreasContainer.innerHTML = currentResultData.sortedCats.map(([cat, score]) => {
+                    const catName = window.translateCategory ? window.translateCategory(cat, lang) : cat;
+                    return `<span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2 me-2 mb-2 fs-6">
+                        <i class="bi bi-star-fill text-warning me-1"></i>${catName} (${score})
+                    </span>`;
+                }).join('');
+            }
         }
         
         function saveResultToBackend(primary, secondary, confidence) {
@@ -874,11 +965,16 @@
         }
 
         function saveResult() {
-            window.location.href = '/account';
+            {% if session.get('is_admin') %}
+            window.location.href = "{{ url_for('auth.admin_dashboard') }}";
+            {% else %}
+            window.location.href = "{{ url_for('auth.account') }}";
+            {% endif %}
         }
 
         function retakeAssessment() {
             answers = {};
+            currentResultData = null;
             document.getElementById('resultBox').style.display = 'none';
             document.getElementById('assessmentForm').style.display = 'block';
             renderQuestion(0);

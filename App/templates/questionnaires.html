@@ -12,18 +12,26 @@
         body { background: #f6f9fc; }
         .question-item { padding: 18px 20px; border-left: 4px solid #4361ee; margin-bottom: 12px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: all 0.2s ease; }
         .question-item:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.09); }
-        .source-badge { font-size: 0.78rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+        .source-badge { font-size: 0.78rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
         .source-fact { background-color: #e7f1ff; color: #0d6efd; }
         .source-rule { background-color: #d1e7dd; color: #0f5132; }
+        .question-title { font-size: 1.05rem; font-weight: 700; line-height: 1.6; }
+        .question-sub { font-size: 0.88rem; opacity: 0.75; }
     </style>
 </head>
 <body>
     <!-- Top Portal Navigation -->
     <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top py-2 shadow-sm mb-4 portal-navbar">
         <div class="container d-flex justify-content-between align-items-center">
-            <a href="{{ url_for('auth.dashboard') }}" class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2">
+            {% if session.get('is_admin') %}
+            <a href="{{ url_for('auth.admin_dashboard') }}" class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2">
                 <i class="bi bi-compass-fill fs-4"></i> <span data-i18n="brand_name">CareerCompass</span>
             </a>
+            {% else %}
+            <a href="{{ url_for('auth.account') }}" class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2">
+                <i class="bi bi-compass-fill fs-4"></i> <span data-i18n="brand_name">CareerCompass</span>
+            </a>
+            {% endif %}
             <div class="d-flex align-items-center gap-2">
                 <!-- Theme Toggle Button -->
                 <button type="button" class="theme-toggle-btn me-1" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
@@ -49,9 +57,15 @@
                     </ul>
                 </div>
 
-                <a href="{{ url_for('auth.dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                {% if session.get('is_admin') %}
+                <a href="{{ url_for('auth.admin_dashboard') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                     <i class="bi bi-arrow-left me-1"></i> <span data-i18n="btn_back_dashboard">Back to Dashboard</span>
                 </a>
+                {% else %}
+                <a href="{{ url_for('auth.account') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i> <span data-i18n="btn_back_portal">Back to Portal</span>
+                </a>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -91,7 +105,16 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/theme-lang.js') }}"></script>
     <script>
+        let cachedQuestions = [];
+
         document.addEventListener('DOMContentLoaded', loadQuestions);
+
+        // Listen for live language changes to instantly re-render translated questions
+        window.addEventListener('languageChanged', function() {
+            if (cachedQuestions && cachedQuestions.length > 0) {
+                renderQuestionsList();
+            }
+        });
 
         function loadQuestions() {
             const container = document.getElementById('questionsList');
@@ -106,49 +129,70 @@
                 .then(response => response.json())
                 .then(data => {
                     spinner.style.display = 'none';
+                    cachedQuestions = data || [];
                     
-                    if (!data || data.length === 0) {
-                        const noMsg = dict.no_questions || 'No questions available. Add Facts or Rules to generate questions.';
+                    if (cachedQuestions.length === 0) {
+                        const noMsg = dict.no_questions || (lang === 'kh' ? 'មិនមានសំណួរនៅឡើយទេ។ សូមបន្ថែមទិន្នន័យ ឬវិធាន ដើម្បីបង្កើតសំណួរ។' : 'No questions available. Add Facts or Rules to generate questions.');
                         container.innerHTML = `<div class="alert alert-info rounded-3">${noMsg}</div>`;
                         return;
                     }
 
-                    data.forEach((q, index) => {
-                        const div = document.createElement('div');
-                        div.className = 'question-item';
-                        
-                        let sourceBadge = '';
-                        let sourceText = '';
-                        
-                        if (q.fact) {
-                            const badgeTxt = dict.derived_fact || 'Derived from Fact';
-                            sourceBadge = `<span class="source-badge source-fact"><i class="bi bi-lightbulb me-1"></i>${badgeTxt}</span>`;
-                            sourceText = `<div class="text-muted small mt-2"><i class="bi bi-info-circle me-1"></i><strong>Fact:</strong> ${q.fact}</div>`;
-                        } else if (q.rule) {
-                            const badgeTxt = dict.derived_rule || 'Derived from Rule';
-                            sourceBadge = `<span class="source-badge source-rule"><i class="bi bi-diagram-3 me-1"></i>${badgeTxt}</span>`;
-                            sourceText = `<div class="text-muted small mt-2"><i class="bi bi-info-circle me-1"></i><strong>Rule:</strong> ${q.rule}</div>`;
-                        }
-
-                        div.innerHTML = `
-                            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                                <h6 class="mb-0 fw-bold">Q${index + 1}: ${q.question}</h6>
-                                ${sourceBadge}
-                            </div>
-                            <div class="mb-1">
-                                <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2 py-1">${q.category || 'General'}</span>
-                            </div>
-                            ${sourceText}
-                        `;
-                        container.appendChild(div);
-                    });
+                    renderQuestionsList();
                 })
                 .catch(err => {
                     spinner.style.display = 'none';
-                    const errMsg = dict.error_loading || 'Error loading questions.';
+                    const errMsg = dict.error_loading || (lang === 'kh' ? 'មានបញ្ហាក្នុងការទាញយកសំណួរ។' : 'Error loading questions.');
                     container.innerHTML = `<div class="alert alert-danger rounded-3">${errMsg}</div>`;
                     console.error(err);
                 });
+        }
+
+        function renderQuestionsList() {
+            const container = document.getElementById('questionsList');
+            const lang = window.getCurrentLang ? window.getCurrentLang() : 'en';
+            const dict = (window.translations && window.translations[lang]) ? window.translations[lang] : {};
+
+            container.innerHTML = '';
+
+            cachedQuestions.forEach((q, index) => {
+                const div = document.createElement('div');
+                div.className = 'question-item';
+                
+                const qMain = window.translateQuestion ? window.translateQuestion(q.question, lang) : (lang === 'kh' && q.question_kh ? q.question_kh : q.question);
+                const altLang = lang === 'kh' ? 'en' : 'kh';
+                const qAlt = window.translateQuestion ? window.translateQuestion(q.question, altLang) : (lang === 'kh' ? (q.question_en || q.question) : (q.question_kh || ''));
+                const catName = window.translateCategory ? window.translateCategory(q.category, lang) : (lang === 'kh' && q.category_kh ? q.category_kh : q.category);
+                
+                let sourceBadge = '';
+                let sourceText = '';
+                
+                if (q.fact) {
+                    const badgeTxt = dict.derived_fact || (lang === 'kh' ? 'ទាញចេញពីទិន្នន័យ Fact' : 'Derived from Fact');
+                    const factTranslated = window.translateQuestion ? window.translateQuestion(q.fact, lang) : q.fact;
+                    sourceBadge = `<span class="source-badge source-fact"><i class="bi bi-lightbulb me-1"></i>${badgeTxt}</span>`;
+                    sourceText = `<div class="text-muted small mt-2"><i class="bi bi-info-circle me-1"></i><strong>${lang === 'kh' ? 'ទិន្នន័យចំណេះដឹង (Fact)' : 'Fact'}:</strong> ${factTranslated}</div>`;
+                } else if (q.rule) {
+                    const badgeTxt = dict.derived_rule || (lang === 'kh' ? 'ទាញចេញពីវិធាន Rule' : 'Derived from Rule');
+                    const ruleTranslated = window.translateRule ? window.translateRule(q.rule, lang) : q.rule;
+                    sourceBadge = `<span class="source-badge source-rule"><i class="bi bi-diagram-3 me-1"></i>${badgeTxt}</span>`;
+                    sourceText = `<div class="text-muted small mt-2"><i class="bi bi-info-circle me-1"></i><strong>${lang === 'kh' ? 'វិធានអាជីវកម្ម (Rule)' : 'Rule'}:</strong> ${ruleTranslated}</div>`;
+                }
+
+                div.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                        <div>
+                            <h6 class="mb-1 question-title ${lang === 'kh' ? 'font-khmer' : ''}">Q${index + 1}: ${qMain}</h6>
+                            ${qAlt && qAlt !== qMain ? `<div class="text-muted question-sub d-flex align-items-center gap-1 mt-1"><i class="bi bi-translate text-primary"></i><span>${qAlt}</span></div>` : ''}
+                        </div>
+                        ${sourceBadge}
+                    </div>
+                    <div class="mb-1 mt-2">
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1"><i class="bi bi-tag-fill me-1"></i>${catName}</span>
+                    </div>
+                    ${sourceText}
+                `;
+                container.appendChild(div);
+            });
         }
     </script>
 </body>

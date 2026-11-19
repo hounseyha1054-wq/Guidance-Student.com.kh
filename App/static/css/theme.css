@@ -451,5 +451,49 @@ body[data-lang="kh"],
     color: #f3f4f6 !important;
 }
 
+/* =========================================================
+   Khmer Typography & Bilingual Questions Enhancements
+   ========================================================= */
+.font-khmer,
+html[lang="kh"] .question-text,
+html[lang="kh"] .question-title,
+body[data-lang="kh"] .question-text,
+body[data-lang="kh"] .question-title {
+    font-family: 'Kantumruy Pro', 'Plus Jakarta Sans', sans-serif !important;
+    line-height: 1.75 !important;
+    letter-spacing: 0.01rem;
+}
+
+.question-subtext {
+    font-size: 0.9rem;
+    color: #6c757d;
+    transition: opacity 0.2s ease;
+}
+
+[data-theme="dark"] .question-subtext {
+    color: #94a3b8 !important;
+}
+
+.category-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4rem 0.95rem;
+    border-radius: 30px;
+    background-color: rgba(67, 97, 238, 0.1);
+    color: #4361ee;
+    border: 1px solid rgba(67, 97, 238, 0.2);
+    transition: all 0.25s ease;
+}
+
+[data-theme="dark"] .category-badge-pill {
+    background-color: rgba(99, 102, 241, 0.18) !important;
+    color: #a5b4fc !important;
+    border-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+
 
 

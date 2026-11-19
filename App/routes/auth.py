@@ -37,8 +37,8 @@ def admin_required(f):
             flash('User session invalid. Please log in again.')
             return redirect(url_for('auth.login'))
         if not user.is_admin:
-            flash('You do not have permission to access this page')
-            return redirect(url_for('auth.dashboard'))
+            flash('Access denied: Administrator privileges required.')
+            return redirect(url_for('auth.account'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -58,51 +58,60 @@ def teacher_required(f):
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        user_type = request.form.get('user_type', 'user')  # 'admin', 'teacher', or 'user'
+        ident = (request.form.get('username') or '').strip()
+        password = request.form.get('password') or ''
+        user_type = request.form.get('user_type', 'user')  # 'admin' or 'user'
+
+        if not ident or not password:
+            flash('Please enter both username/email and password.')
+            return render_template('login.html', user_type=user_type, username=ident)
         
-        # Try student/admin login
+        # Student / Admin authentication with strict role checks
         if user_type in ['user', 'admin']:
-            user = User.query.filter_by(username=username).first()
+            user = User.query.filter((User.username == ident) | (User.email == ident)).first()
             
             if user and user.check_password(password):
-                # Check if login type matches user role
-                if user_type == 'admin' and not user.is_admin:
-                    flash('This account is not an admin account')
-                    return redirect(url_for('auth.login'))
-                elif user_type == 'user' and user.is_admin:
-                    flash('Please use admin login for admin accounts')
-                    return redirect(url_for('auth.login'))
-                
-                session['user_id'] = user.id
-                session['username'] = user.username
-                session['is_admin'] = user.is_admin
-                session.pop('teacher_id', None)
-                
-                if user.is_admin:
+                # Strict condition check on role vs selected user_type
+                if user_type == 'admin':
+                    if not user.is_admin:
+                        flash('Access Denied: This account does not have administrator privileges. Please switch to User tab.')
+                        return render_template('login.html', user_type='admin', username=ident)
+                    
+                    session.clear()
+                    session['user_id'] = user.id
+                    session['username'] = user.username
+                    session['is_admin'] = True
                     return redirect(url_for('auth.admin_dashboard'))
-                else:
+
+                elif user_type == 'user':
+                    if user.is_admin:
+                        flash('Notice: This account has administrator privileges. Please switch to the Admin tab to log in.')
+                        return render_template('login.html', user_type='user', username=ident)
+                    
+                    session.clear()
+                    session['user_id'] = user.id
+                    session['username'] = user.username
+                    session['is_admin'] = False
                     return redirect(url_for('auth.account'))
             else:
-                flash('Invalid username or password')
+                flash('Invalid username/email or password.')
+                return render_template('login.html', user_type=user_type, username=ident)
         
-        # Try teacher login
+        # Teacher login
         elif user_type == 'teacher':
-            teacher = Teacher.query.filter_by(username=username).first()
-            
+            teacher = Teacher.query.filter((Teacher.username == ident) | (Teacher.email == ident)).first()
             if teacher and teacher.check_password(password):
+                session.clear()
                 session['teacher_id'] = teacher.id
                 session['teacher_name'] = teacher.get_full_name()
                 session['teacher_email'] = teacher.email
-                session.pop('user_id', None)
-                session.pop('is_admin', None)
-                
                 return redirect(url_for('auth.teacher_dashboard'))
             else:
-                flash('Invalid username or password')
+                flash('Invalid username/email or password.')
+                return render_template('login.html', user_type=user_type, username=ident)
     
-    return render_template('login.html')
+    req_type = request.args.get('type', 'user')
+    return render_template('login.html', user_type=req_type)
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -201,18 +210,11 @@ def dashboard():
     if not user:
         session.clear()
         return redirect(url_for('auth.login'))
-    career_stats, recent_students, category_data, area_chart_data = get_dashboard_data()
     
-    # Common stats
-    total_facts = Fact.query.count()
-    total_rules = Rule.query.count()
-    total_careers = Career.query.count()
-    
-    # If user is a student, render the dashboard with stats
+    # Students are strictly restricted to the user portal
     if not user.is_admin:
         return redirect(url_for('auth.account'))
 
-    # Redirect admins to the admin dashboard view
     return redirect(url_for('auth.admin_dashboard'))
 
 @auth_bp.route('/assessment')
@@ -416,16 +418,25 @@ def logout():
 
 @auth_bp.route('/api/login', methods=['POST'])
 def api_login():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+    data = request.get_json() or {}
+    ident = (data.get('username') or '').strip()
+    password = data.get('password') or ''
+    user_type = data.get('user_type', 'user')
     
-    user = User.query.filter_by(username=username).first()
+    user = User.query.filter((User.username == ident) | (User.email == ident)).first()
     
     if user and user.check_password(password):
+        if user_type == 'admin' and not user.is_admin:
+            return jsonify({'success': False, 'message': 'Access Denied: Administrator privileges required.'}), 403
+        elif user_type == 'user' and user.is_admin:
+            return jsonify({'success': False, 'message': 'Notice: Administrator accounts must log in via Admin tab.'}), 403
+        
+        session.clear()
         session['user_id'] = user.id
         session['username'] = user.username
-        return jsonify({'success': True, 'message': 'Login successful'})
+        session['is_admin'] = user.is_admin
+        target = url_for('auth.admin_dashboard') if user.is_admin else url_for('auth.account')
+        return jsonify({'success': True, 'message': 'Login successful', 'is_admin': user.is_admin, 'redirect': target})
     else:
         return jsonify({'success': False, 'message': 'Invalid username or password'}), 401
 

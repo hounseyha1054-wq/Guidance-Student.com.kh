@@ -677,8 +677,8 @@
                         {% if user.assessment_completed %}
                         <div class="career-showcase mb-4">
                             <span class="career-badge" data-i18n="top_career_match">TOP CAREER MATCH</span>
-                            <h3 class="fw-bold mb-2">{{ user.recommended_career }}</h3>
-                            <p class="text-secondary mb-3">
+                            <h3 class="fw-bold mb-2" data-i18n-career="{{ user.recommended_career }}">{{ user.recommended_career }}</h3>
+                            <p class="text-secondary mb-3" id="careerRecommendationSummary" data-default-desc="{% if not career_info or not career_info.description %}true{% endif %}">
                                 {% if career_info and career_info.description %}
                                     {{ career_info.description }}
                                 {% else %}
@@ -983,6 +983,19 @@
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             });
+        });
+
+        // Translate dynamic assessment career and summary when language changes
+        window.addEventListener('languageChanged', function(e) {
+            const lang = e.detail ? e.detail.lang : (window.getCurrentLang ? window.getCurrentLang() : 'en');
+            const descEl = document.getElementById('careerRecommendationSummary');
+            if (descEl && descEl.getAttribute('data-default-desc') === 'true') {
+                if (lang === 'kh') {
+                    descEl.textContent = "ចម្លើយនៃការវាយតម្លៃផ្ទាល់ខ្លួនរបស់អ្នកបង្ហាញពីភាពស៊ីសង្វាក់គ្នាកម្រិតខ្ពស់សម្រាប់ជំនាញឯកទេសនេះ។ អ្នកបានបង្ហាញនូវភាពលេចធ្លោលើការគិតបែបវិភាគ និងការតម្រង់ទិសដៅជំនាញយ៉ាងច្បាស់លាស់។";
+                } else {
+                    descEl.textContent = "Your personal assessment responses showed a high positive correlation for this specialization. You demonstrated strength in analytical reasoning and domain alignment.";
+                }
+            }
         });
     </script>
 </body>

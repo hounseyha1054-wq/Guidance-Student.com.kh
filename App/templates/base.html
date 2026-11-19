@@ -43,7 +43,9 @@
       <ul class="navbar-nav ms-auto">
         {% if session.get('user_id') %}
         {% if session.get('is_admin') %}
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.dashboard') }}"><span data-i18n="nav_admin_view">Dashboard</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.admin_dashboard') }}"><span data-i18n="nav_admin_view">Dashboard</span></a></li>
+        {% else %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.account') }}"><span data-i18n="nav_overview">Portal</span></a></li>
         {% endif %}
         <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.assessment') }}"><span data-i18n="nav_assessment">Assessment</span></a></li>
         {% endif %}

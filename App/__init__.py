@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, url_for, render_template
 import os
 from dotenv import load_dotenv
 from sqlalchemy import text
@@ -10,12 +10,7 @@ from .routes.auth import auth_bp
 from .routes.manage import manage_bp
 
 def create_app():
-    app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'your_secret_key_here'
-    # Ensure Flask instance folder exists and use absolute path for SQLite
-    os.makedirs(app.instance_path, exist_ok=True)
-    
-    # Force load .env file - Check multiple locations to be safe
+    # Force load .env file first - Check multiple locations to be safe
     current_dir = os.path.dirname(__file__)
     project_root = os.path.dirname(current_dir)
     env_paths = [os.path.join(project_root, '.env'), os.path.join(os.getcwd(), '.env')]
@@ -25,6 +20,11 @@ def create_app():
             load_dotenv(path)
             print(f"--> Loaded .env from: {path}")
             break
+
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or 'dev_secret_career_guidance_2026_key'
+    # Ensure Flask instance folder exists and use absolute path for SQLite
+    os.makedirs(app.instance_path, exist_ok=True)
     
     # Database Configuration: Use DATABASE_URL if set (SQL Server), else fallback to SQLite
     if os.getenv('DATABASE_URL'):
@@ -56,6 +56,14 @@ def create_app():
     @app.route('/')
     def index():
         return redirect(url_for('auth.login'))
+
+    @app.errorhandler(404)
+    def not_found_error(e):
+        return render_template('404.html'), 404
+
+    @app.errorhandler(500)
+    def internal_error(e):
+        return render_template('500.html'), 500
     
     with app.app_context():
         db.create_all()

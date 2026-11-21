@@ -58,12 +58,12 @@ def teacher_required(f):
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        ident = (request.form.get('username') or '').strip()
+        ident = (request.form.get('email') or request.form.get('username') or '').strip()
         password = request.form.get('password') or ''
         user_type = request.form.get('user_type', 'user')  # 'admin' or 'user'
 
         if not ident or not password:
-            flash('Please enter both username/email and password.')
+            flash('Please enter both email/username and password.')
             return render_template('login.html', user_type=user_type, username=ident)
         
         # Student / Admin authentication with strict role checks
@@ -116,27 +116,49 @@ def login():
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        first_name = request.form.get('first_name')
-        last_name = request.form.get('last_name')
-        phone = request.form.get('phone')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
+        email = (request.form.get('email') or '').strip().lower()
+        password = request.form.get('password') or ''
+        confirm_password = request.form.get('confirm_password') or ''
         
-        if password != confirm_password:
-            flash('Passwords do not match')
+        if not email or not password:
+            flash('Please enter both email and password.')
             return redirect(url_for('auth.register'))
-        
-        if User.query.filter_by(username=username).first():
-            flash('Username already exists')
+            
+        if password != confirm_password:
+            flash('Passwords do not match.')
+            return redirect(url_for('auth.register'))
+            
+        if len(password) < 8:
+            flash('Password must be at least 8 characters long.')
             return redirect(url_for('auth.register'))
             
         if User.query.filter_by(email=email).first():
-            flash('Email already registered')
-            return redirect(url_for('auth.register'))
+            flash('Email already registered. Please log in.')
+            return redirect(url_for('auth.login'))
         
-        new_user = User(username=username, email=email, first_name=first_name, last_name=last_name, phone=phone)
+        username = (request.form.get('username') or '').strip()
+        if not username:
+            username = email.split('@')[0]
+            
+        # Ensure username uniqueness
+        base_username = username
+        counter = 1
+        while User.query.filter_by(username=username).first():
+            username = f"{base_username}_{counter}"
+            counter += 1
+            
+        first_name = (request.form.get('first_name') or '').strip() or username
+        last_name = (request.form.get('last_name') or '').strip()
+        phone = (request.form.get('phone') or '').strip()
+        
+        new_user = User(
+            username=username,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            phone=phone,
+            is_admin=False
+        )
         new_user.set_password(password)
         
         db.session.add(new_user)
@@ -146,6 +168,68 @@ def register():
         return redirect(url_for('auth.login'))
     
     return render_template('register.html')
+
+@auth_bp.route('/auth/firebase-login', methods=['POST'])
+def firebase_login():
+    """Handle client-side Firebase authentication (Google Sign-In or Email)"""
+    data = request.get_json() or {}
+    email = (data.get('email') or '').strip().lower()
+    display_name = (data.get('displayName') or '').strip()
+    user_type = data.get('user_type', 'user')  # 'admin' or 'user'
+    
+    if not email:
+        return jsonify({'success': False, 'message': 'Email is required from authentication provider.'}), 400
+        
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        # Create user account for new Google / Firebase user
+        username = email.split('@')[0]
+        base_username = username
+        counter = 1
+        while User.query.filter_by(username=username).first():
+            username = f"{base_username}_{counter}"
+            counter += 1
+            
+        parts = display_name.split(' ', 1) if display_name else [username, '']
+        first_name = parts[0]
+        last_name = parts[1] if len(parts) > 1 else ''
+        
+        user = User(
+            username=username,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            is_admin=False
+        )
+        user.set_password(secrets.token_urlsafe(16))
+        db.session.add(user)
+        db.session.commit()
+        
+    # Check admin role condition if login as admin was selected
+    if user_type == 'admin' and not user.is_admin:
+        return jsonify({
+            'success': False,
+            'message': 'Access Denied: This account does not have administrator privileges. Please switch to User tab.'
+        }), 403
+
+    if user_type == 'user' and user.is_admin:
+        return jsonify({
+            'success': False,
+            'message': 'Notice: This account has administrator privileges. Please switch to the Admin tab to log in.'
+        }), 403
+        
+    session.clear()
+    session['user_id'] = user.id
+    session['username'] = user.username
+    session['is_admin'] = user.is_admin
+    session.pop('teacher_id', None)
+    
+    redirect_url = url_for('auth.admin_dashboard') if user.is_admin else url_for('auth.account')
+    return jsonify({
+        'success': True,
+        'redirect_url': redirect_url,
+        'is_admin': user.is_admin
+    })
 
 def get_dashboard_data():
     """Helper to get common dashboard data"""
@@ -578,15 +662,28 @@ def get_user_activities_by_id(user_id):
 
 @auth_bp.route('/login/google')
 def google_login():
+    client_id = os.getenv('GOOGLE_CLIENT_ID')
+    client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
+    if not client_id or not client_secret or not client_id.strip() or not client_secret.strip():
+        flash('Google Sign-In is not configured yet. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in the .env file.')
+        return redirect(url_for('auth.login'))
     redirect_uri = url_for('auth.google_callback', _external=True)
     return oauth.google.authorize_redirect(redirect_uri)
 
 @auth_bp.route('/auth/google/callback')
 def google_callback():
-    token = oauth.google.authorize_access_token()
-    user_info = oauth.google.userinfo()
+    try:
+        token = oauth.google.authorize_access_token()
+        user_info = oauth.google.userinfo()
+    except Exception as e:
+        flash(f'Google Sign-In failed or was cancelled: {str(e)}')
+        return redirect(url_for('auth.login'))
     
     email = user_info.get('email')
+    if not email:
+        flash('Failed to retrieve email address from Google.')
+        return redirect(url_for('auth.login'))
+        
     user = User.query.filter_by(email=email).first()
     
     if not user:
@@ -599,8 +696,8 @@ def google_callback():
         user = User(
             username=username,
             email=email,
-            first_name=user_info.get('given_name'),
-            last_name=user_info.get('family_name'),
+            first_name=user_info.get('given_name') or username,
+            last_name=user_info.get('family_name') or '',
             is_admin=False
         )
         # Set a random password since they use Google login

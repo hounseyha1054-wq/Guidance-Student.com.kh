@@ -12,10 +12,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', function(e) {
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
+            const identInput = document.getElementById('username') || document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const ident = identInput ? identInput.value.trim() : '';
+            const password = passwordInput ? passwordInput.value.trim() : '';
             
-            if (!username || !password) {
+            if (!ident || !password) {
                 e.preventDefault();
                 showAlert('Please fill in all fields', 'danger');
                 return false;
@@ -27,12 +29,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
         registerForm.addEventListener('submit', function(e) {
-            const username = document.getElementById('username').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const confirmPassword = document.getElementById('confirm_password').value.trim();
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirm_password');
             
-            if (!username || !email || !password || !confirmPassword) {
+            const email = emailInput ? emailInput.value.trim() : '';
+            const password = passwordInput ? passwordInput.value.trim() : '';
+            const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value.trim() : '';
+            
+            if (!email || !password || !confirmPassword) {
                 e.preventDefault();
                 showAlert('Please fill in all fields', 'danger');
                 return false;

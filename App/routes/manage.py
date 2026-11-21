@@ -44,7 +44,7 @@ def rules_page():
 
 
 @manage_bp.route('/questionnaires')
-@login_required
+@admin_required
 def questionnaires_page():
     return render_template('questionnaires.html')
 

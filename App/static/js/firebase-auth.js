@@ -17,8 +17,48 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 
 const googleProvider = (typeof firebase !== 'undefined') ? new firebase.auth.GoogleAuthProvider() : null;
 
+// Helper to detect iOS or in-app webviews (Telegram, Messenger, Instagram, etc.)
+function isMobileOrInApp() {
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    const isInApp = /Telegram|FBAN|FBAV|Instagram|Line|WhatsApp/i.test(ua);
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    return isIOS || isInApp || isMobile;
+}
+
 /**
- * Handle Google Sign-In with Firebase popup
+ * Send authenticated Firebase user token to Flask backend session endpoint
+ */
+async function sendFirebaseUserToBackend(user) {
+    const idToken = await user.getIdToken();
+    const userTypeInput = document.getElementById('userTypeInput');
+    const userType = userTypeInput ? userTypeInput.value : 'user';
+
+    const response = await fetch('/auth/firebase-login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            email: user.email,
+            displayName: user.displayName || user.email.split('@')[0],
+            uid: user.uid,
+            idToken: idToken,
+            user_type: userType
+        })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+        window.location.href = data.redirect_url || '/account';
+    } else {
+        showAuthAlert(data.message || 'Authentication error from server.', 'danger');
+    }
+}
+
+/**
+ * Handle Google Sign-In with automatic fallback to redirect for mobile & iOS
  */
 async function handleFirebaseGoogleLogin() {
     if (typeof firebase === 'undefined' || !firebase.auth) {
@@ -35,64 +75,53 @@ async function handleFirebaseGoogleLogin() {
             googleBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Signing in with Google...';
         }
 
-        const result = await firebase.auth().signInWithPopup(googleProvider);
-        const user = result.user;
-        const idToken = await user.getIdToken();
-
-        // Determine user_type if present on the page (e.g. login.html tab toggle)
-        const userTypeInput = document.getElementById('userTypeInput');
-        const userType = userTypeInput ? userTypeInput.value : 'user';
-
-        // Send authenticated user info to Flask backend session endpoint
-        const response = await fetch('/auth/firebase-login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email: user.email,
-                displayName: user.displayName || user.email.split('@')[0],
-                uid: user.uid,
-                idToken: idToken,
-                user_type: userType
-            })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            window.location.href = data.redirect_url || '/account';
-        } else {
-            showAuthAlert(data.message || 'Authentication error from server.', 'danger');
-            if (googleBtn) {
-                googleBtn.disabled = false;
-                googleBtn.innerHTML = originalBtnHtml;
-            }
+        // On iOS Safari / in-app browsers (Telegram, etc.), popups are blocked by default.
+        // Use signInWithRedirect directly on mobile for a seamless flow, or try popup on desktop.
+        if (isMobileOrInApp()) {
+            await firebase.auth().signInWithRedirect(googleProvider);
+            return;
         }
+
+        try {
+            const result = await firebase.auth().signInWithPopup(googleProvider);
+            await sendFirebaseUserToBackend(result.user);
+        } catch (popupError) {
+            if (popupError.code === 'auth/popup-blocked' || popupError.code === 'auth/cancelled-popup-request') {
+                console.log('Popup blocked. Falling back to signInWithRedirect...');
+                await firebase.auth().signInWithRedirect(googleProvider);
+                return;
+            }
+            throw popupError;
+        }
+
     } catch (error) {
         console.error('Firebase Google Sign-In Error:', error);
         if (googleBtn) {
             googleBtn.disabled = false;
             googleBtn.innerHTML = originalBtnHtml;
         }
+        handleAuthError(error);
+    }
+}
 
-        if (error.code === 'auth/popup-closed-by-user') {
-            // User closed the popup window before finishing
-            return;
-        }
+/**
+ * Centralized error handler with user-friendly instructions
+ */
+function handleAuthError(error) {
+    if (error.code === 'auth/popup-closed-by-user') {
+        return;
+    }
 
-        if (error.code === 'auth/unauthorized-domain') {
-            if (window.location.hostname === '127.0.0.1') {
-                const localhostUrl = window.location.href.replace('127.0.0.1', 'localhost');
-                showAuthAlert(`<b>Domain unauthorized:</b> In Firebase Console, <code>localhost</code> is authorized, but your browser is opening on <code>127.0.0.1</code>.<br><br>👉 <a href="${localhostUrl}" class="btn btn-sm btn-primary mt-2 d-inline-block fw-bold text-white">Switch to http://localhost:5000</a><br><small class="text-muted d-block mt-2">Alternatively, click <b>"Add domain"</b> in Firebase Console and add <code>127.0.0.1</code>.</small>`, 'warning');
-            } else {
-                showAuthAlert(`Domain <code>${window.location.hostname}</code> is unauthorized in Firebase. In Firebase Console, go to Authentication > Settings > Authorized domains, and click <b>Add domain</b> to add this domain.`, 'warning');
-            }
-        } else if (error.code === 'auth/operation-not-allowed') {
-            showAuthAlert('Google Sign-in is not enabled in Firebase Console. Go to Authentication > Sign-in method > Google, and click Enable.', 'warning');
-        } else {
-            showAuthAlert(error.message || 'Failed to sign in with Google.', 'danger');
-        }
+    if (error.code === 'auth/unauthorized-domain') {
+        const host = window.location.hostname;
+        showAuthAlert(`<b>Domain unauthorized in Firebase:</b> <code>${host}</code><br><br>👉 Go to <b>Firebase Console > Authentication > Settings > Authorized domains</b>, click <b>Add domain</b>, and add: <code>${host}</code>`, 'warning');
+    } else if (error.code === 'auth/popup-blocked') {
+        showAuthAlert('Popup was blocked by your mobile browser. Switching to redirect sign-in...', 'info');
+        firebase.auth().signInWithRedirect(googleProvider);
+    } else if (error.code === 'auth/operation-not-allowed') {
+        showAuthAlert('Google Sign-in is not enabled in Firebase Console. Go to Authentication > Sign-in method > Google, and click Enable.', 'warning');
+    } else {
+        showAuthAlert(error.message || 'Failed to sign in with Google.', 'danger');
     }
 }
 
@@ -123,8 +152,24 @@ function showAuthAlert(message, type = 'danger') {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Bind event listeners to Google buttons
+// Check for redirect result on page load (essential for mobile & iOS)
 document.addEventListener('DOMContentLoaded', function() {
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+        firebase.auth().getRedirectResult().then(async (result) => {
+            if (result && result.user) {
+                const googleBtn = document.getElementById('googleLoginBtn') || document.querySelector('.google-login-btn');
+                if (googleBtn) {
+                    googleBtn.disabled = true;
+                    googleBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Finalizing sign in...';
+                }
+                await sendFirebaseUserToBackend(result.user);
+            }
+        }).catch((error) => {
+            console.error('Redirect Sign-in Error:', error);
+            handleAuthError(error);
+        });
+    }
+
     const googleBtns = document.querySelectorAll('.google-login-btn, #googleLoginBtn, a[href*="google_login"]');
     googleBtns.forEach(btn => {
         btn.addEventListener('click', function(e) {

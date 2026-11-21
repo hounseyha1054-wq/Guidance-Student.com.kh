@@ -26,10 +26,14 @@ def create_app():
     # Ensure Flask instance folder exists and use absolute path for SQLite
     os.makedirs(app.instance_path, exist_ok=True)
     
-    # Database Configuration: Use DATABASE_URL if set (SQL Server), else fallback to SQLite
-    if os.getenv('DATABASE_URL'):
-        print(f"--> CONNECTING TO SQL SERVER: {os.getenv('DATABASE_URL').split('@')[-1]}")
-        app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+    # Database Configuration: Normalize postgresql URL if provided, else fallback to SQLite
+    db_url = os.getenv('DATABASE_URL')
+    if db_url:
+        # Cloud providers like Render, Supabase, Neon use postgres:// which SQLAlchemy 1.4+ rejects
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql://", 1)
+        print(f"--> CONNECTING TO DATABASE: {db_url.split('@')[-1]}")
+        app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     else:
         print("--> WARNING: DATABASE_URL not found. Using SQLite fallback.")
         sqlite_path = os.path.join(app.instance_path, 'app.db')
@@ -91,6 +95,10 @@ def create_app():
                         conn.commit()
         except Exception as e:
             print(f"Migration error: {e}")
+            
+        # Seed default Admin, Knowledge Base Facts, Rules, and Careers if database is fresh
+        from .seed import seed_default_data
+        seed_default_data()
     
     return app
 

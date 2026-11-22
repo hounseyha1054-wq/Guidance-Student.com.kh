@@ -29,20 +29,71 @@ function isMobileOrInApp() {
 let isProcessingAuth = false;
 
 /**
+ * Show a sleek full-screen loading overlay on mobile so user never experiences silent delay
+ */
+function showFullScreenAuthLoader(text = "Connecting to Google...") {
+    let overlay = document.getElementById('authFullScreenLoader');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'authFullScreenLoader';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 999999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-family: system-ui, -apple-system, sans-serif;
+            text-align: center;
+            padding: 20px;
+        `;
+        overlay.innerHTML = `
+            <div class="spinner-border text-primary" role="status" style="width: 3.2rem; height: 3.2rem; border-width: 0.25em;"></div>
+            <h5 id="authLoaderTitle" style="margin-top: 1.5rem; font-weight: 700; font-size: 1.25rem;">${text}</h5>
+            <p id="authLoaderSubtitle" style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin-top: 0.5rem; max-width: 320px;">
+                Setting up your profile and signing in. Please wait a moment...
+            </p>
+        `;
+        document.body.appendChild(overlay);
+    } else {
+        const titleEl = document.getElementById('authLoaderTitle');
+        if (titleEl) titleEl.textContent = text;
+        overlay.style.display = 'flex';
+    }
+}
+
+function hideFullScreenAuthLoader() {
+    const overlay = document.getElementById('authFullScreenLoader');
+    if (overlay) {
+        overlay.style.display = 'none';
+    }
+}
+
+/**
  * Send authenticated Firebase user token to Flask backend session endpoint
  */
 async function sendFirebaseUserToBackend(user) {
     if (isProcessingAuth) return;
     isProcessingAuth = true;
 
+    showFullScreenAuthLoader("Signing you in...");
+
     const googleBtn = document.getElementById('googleLoginBtn') || document.querySelector('.google-login-btn');
     if (googleBtn) {
         googleBtn.disabled = true;
-        googleBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Signing in with Google...';
+        googleBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Signing in...';
     }
 
     try {
-        const idToken = await user.getIdToken();
+        const idToken = await user.getIdToken(false);
         const userTypeInput = document.getElementById('userTypeInput');
         const userType = userTypeInput ? userTypeInput.value : 'user';
 
@@ -64,9 +115,11 @@ async function sendFirebaseUserToBackend(user) {
 
         if (data.success) {
             sessionStorage.removeItem('pending_google_login');
-            window.location.href = data.redirect_url || '/account';
+            // Use location.replace for instant redirect without dirtying back history on iOS
+            window.location.replace(data.redirect_url || '/account');
         } else {
             sessionStorage.removeItem('pending_google_login');
+            hideFullScreenAuthLoader();
             showAuthAlert(data.message || 'Authentication error from server.', 'danger');
             if (googleBtn) {
                 googleBtn.disabled = false;
@@ -76,6 +129,7 @@ async function sendFirebaseUserToBackend(user) {
         }
     } catch (err) {
         sessionStorage.removeItem('pending_google_login');
+        hideFullScreenAuthLoader();
         console.error('Backend Auth Sync Error:', err);
         showAuthAlert('Failed to connect with application server. Please try again.', 'danger');
         if (googleBtn) {
@@ -110,9 +164,9 @@ async function handleFirebaseGoogleLogin() {
             return;
         }
 
-        // On iOS Safari / in-app browsers (Telegram, etc.), popups are blocked by default.
-        // Set pending flag in sessionStorage and redirect cleanly.
+        // Mobile & iOS Safari: Use redirect flow with pending flag
         if (isMobileOrInApp()) {
+            showFullScreenAuthLoader("Redirecting to Google...");
             sessionStorage.setItem('pending_google_login', 'true');
             await firebase.auth().signInWithRedirect(googleProvider);
             return;
@@ -127,6 +181,7 @@ async function handleFirebaseGoogleLogin() {
         } catch (popupError) {
             if (popupError.code === 'auth/popup-blocked' || popupError.code === 'auth/cancelled-popup-request') {
                 console.log('Popup blocked. Falling back to signInWithRedirect...');
+                showFullScreenAuthLoader("Redirecting to Google...");
                 sessionStorage.setItem('pending_google_login', 'true');
                 await firebase.auth().signInWithRedirect(googleProvider);
                 return;
@@ -137,6 +192,7 @@ async function handleFirebaseGoogleLogin() {
     } catch (error) {
         console.error('Firebase Google Sign-In Error:', error);
         sessionStorage.removeItem('pending_google_login');
+        hideFullScreenAuthLoader();
         if (googleBtn) {
             googleBtn.disabled = false;
             googleBtn.innerHTML = originalBtnHtml;
@@ -149,6 +205,7 @@ async function handleFirebaseGoogleLogin() {
  * Centralized error handler with user-friendly instructions
  */
 function handleAuthError(error) {
+    hideFullScreenAuthLoader();
     if (error.code === 'auth/popup-closed-by-user') {
         return;
     }
@@ -197,12 +254,12 @@ function showAuthAlert(message, type = 'danger') {
 // Check for redirect result on page load (essential for mobile & iOS)
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof firebase !== 'undefined' && firebase.auth) {
-        // If we were waiting for redirect to return, show spinner immediately
         const isPending = sessionStorage.getItem('pending_google_login') === 'true';
-        const googleBtn = document.getElementById('googleLoginBtn') || document.querySelector('.google-login-btn');
-        if (isPending && googleBtn) {
-            googleBtn.disabled = true;
-            googleBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Signing in with Google...';
+
+        // If returning from Google redirect on iOS/mobile, immediately show full-screen overlay
+        // so the user never sees a delay or wonder why the page loaded
+        if (isPending) {
+            showFullScreenAuthLoader("Completing Google Sign-In...");
         }
 
         // 1. Process getRedirectResult
@@ -210,8 +267,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (result && result.user) {
                 await sendFirebaseUserToBackend(result.user);
             } else if (isPending) {
-                // If getRedirectResult returned null on iOS Safari (known ITP issue),
-                // check onAuthStateChanged directly
                 const currentUser = firebase.auth().currentUser;
                 if (currentUser) {
                     await sendFirebaseUserToBackend(currentUser);
@@ -220,10 +275,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }).catch((error) => {
             console.error('Redirect Sign-in Error:', error);
             sessionStorage.removeItem('pending_google_login');
+            hideFullScreenAuthLoader();
             handleAuthError(error);
         });
 
-        // 2. Also listen to onAuthStateChanged (vital fallback for iOS Safari / in-app webview)
+        // 2. Also listen to onAuthStateChanged (fastest fallback for iOS Safari)
         firebase.auth().onAuthStateChanged(async (user) => {
             if (user && sessionStorage.getItem('pending_google_login') === 'true') {
                 await sendFirebaseUserToBackend(user);
